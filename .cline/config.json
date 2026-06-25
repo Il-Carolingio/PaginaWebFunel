@@ -1,0 +1,53 @@
+{
+  "name": "Royal Prestige - Proyecto Web",
+  "version": "1.0.0",
+  "description": "Configuración de Cline para el proyecto Royal Prestige",
+  "rules": [
+    "user-stories.md",
+    "evaluate-story.md",
+    "start-sprint.md"
+  ],
+  "autoApprove": false,
+  "context": {
+    "files": [
+      "docs/user-stories/templates/story-template.md",
+      "docs/user-stories/templates/sprint-template.md",
+      "docs/user-stories/index.md",
+      "docs/user-stories/README.md"
+    ],
+    "directories": [
+      "docs/user-stories/backlog/",
+      "docs/user-stories/evaluations/",
+      "docs/user-stories/sprints/"
+    ]
+  },
+  "customCommands": [
+    {
+      "name": "recibeHU",
+      "description": "Crea una historia de usuario completa a partir de una descripción simple",
+      "prompt": "Usa las reglas de .cline/rules/user-stories.md para crear una historia de usuario. Sigue TODOS los pasos: análisis, expansión, creación del archivo y actualización del índice."
+    },
+    {
+      "name": "priorizaHU",
+      "description": "Reasigna prioridad a una historia"
+    },
+    {
+      "name": "completaHU",
+      "description": "Marca una historia como completada"
+    },
+    {
+      "name": "reporteHU",
+      "description": "Genera un reporte de progreso"
+    },
+    {
+      "name": "evaluar-HU-XXX",
+      "description": "Evalúa la HU-XXX: genera reporte de riesgos, deuda técnica y esfuerzo en evaluations/",
+      "prompt": "Usa las reglas de .cline/rules/evaluate-story.md para evaluar la HU especificada. Lee la HU desde backlog/, analiza los archivos del proyecto relacionados y genera el reporte de evaluación en evaluations/"
+    },
+    {
+      "name": "iniciarSprint-HU-XXX",
+      "description": "Implementa todas las tareas de la HU-XXX basándose en su evaluación, ejecuta el sprint y marca la historia como completada",
+      "prompt": "Usa las reglas de .cline/rules/start-sprint.md para iniciar un sprint de la HU especificada. Lee la HU desde backlog/, lee la evaluación desde evaluations/, implementa cada tarea del desglose respetando dependencias, y actualiza el estado a Completada en index.md"
+    }
+  ]
+}
