@@ -43,30 +43,40 @@ function Reclutamiento() {
     setIsSubmitting(true);
     
     try {
-      // Aquí irá la llamada al backend cuando esté listo
-      // const response = await fetch('/api/reclutamiento/registro', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
-      
-      // Simulación de envío exitoso
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: '¡Registro exitoso!',
-        description: 'Nos pondremos en contacto contigo pronto.',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-        position: 'top',
+      const response = await fetch('/api/reclutamiento/registro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
       
-      reset();
+      const result = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: '¡Registro exitoso!',
+          description: result.message || 'Nos pondremos en contacto contigo pronto.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+          position: 'top',
+        });
+        
+        reset();
+      } else {
+        toast({
+          title: 'Error al registrar',
+          description: result.message || 'Por favor intenta de nuevo.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+          position: 'top',
+        });
+      }
     } catch (error) {
+      console.error('Error:', error);
       toast({
-        title: 'Error al registrar',
-        description: 'Por favor intenta de nuevo.',
+        title: 'Error de conexión',
+        description: 'Por favor intenta de nuevo más tarde.',
         status: 'error',
         duration: 5000,
         isClosable: true,

@@ -40,8 +40,9 @@
   - ¿Tienes experiencia en ventas? (select: Sí/No)
   - ¿Por qué quieres unirte a Royal Prestige? (textarea, opcional)
   - Disponibilidad de horario (select: Mañana/Tarde/Noche/Flexible)
+  - Status de reclutamiento (pendiente, contratado, cancelado)
 - Endpoint backend: `POST /api/reclutamiento/registro`
-- Colección MongoDB: `reclutamiento` o agregar campo `tipo: "reclutamiento"` a `prospectos`
+- Colección MongoDB: `reclutamiento`
 
 ---
 
