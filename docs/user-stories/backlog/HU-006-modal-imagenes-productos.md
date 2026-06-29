@@ -1,6 +1,6 @@
 # HU-006: Modal de ampliación de imágenes en Productos Destacados
 
-**Estado:** Pendiente
+**Estado:** ✅ Completada
 **Prioridad:** Media
 **Sprint:** 3
 
