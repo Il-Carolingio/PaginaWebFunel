@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const reclutamientoSchema = new mongoose.Schema({
   nombre: {
@@ -61,4 +61,4 @@ reclutamientoSchema.index({ telefono: 1 }, { unique: true });
 reclutamientoSchema.index({ fechaRegistro: -1 });
 reclutamientoSchema.index({ status: 1 });
 
-module.exports = mongoose.model('Reclutamiento', reclutamientoSchema);
+export default mongoose.model('Reclutamiento', reclutamientoSchema);

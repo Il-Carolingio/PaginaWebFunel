@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Reclutamiento = require('../models/Reclutamiento');
+import mongoose from 'mongoose';
+import Reclutamiento from '../models/Reclutamiento.js';
 
 const seedReclutamiento = async () => {
   try {

@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import reclutamientoController from '../controllers/ReclutamientoController.js';
+
 const router = express.Router();
-const reclutamientoController = require('../controllers/ReclutamientoController');
 
 // POST /api/reclutamiento/registro - Registrar nuevo candidato
 router.post('/registro', reclutamientoController.registrar);
@@ -17,4 +18,4 @@ router.put('/:id/status', reclutamientoController.actualizarStatus);
 // DELETE /api/reclutamiento/:id - Eliminar registro (admin)
 router.delete('/:id', reclutamientoController.eliminar);
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const Reclutamiento = require('../models/Reclutamiento');
+import Reclutamiento from '../models/Reclutamiento.js';
 
 // Registrar nuevo candidato
 exports.registrar = async (req, res) => {
