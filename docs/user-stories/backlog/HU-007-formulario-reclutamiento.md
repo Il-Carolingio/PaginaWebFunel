@@ -2,9 +2,9 @@
 
 **Estado:** Pendiente de aprobación
 **Prioridad:** Alta
+**Sprint:** 4
 **Esfuerzo estimado:** 6 horas
 **Tiempo estimado:** 1.5 días
-**Sprint:** Pendiente de asignar
 
 ---
 
