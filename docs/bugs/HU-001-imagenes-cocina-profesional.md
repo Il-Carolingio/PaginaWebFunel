@@ -2,7 +2,7 @@
 
 **Tipo:** Bugfix
 **Prioridad:** Media
-**Estado:** Reportado
+**Estado:** Verificado
 **Fecha de reporte:** 2026-06-29
 
 ---
