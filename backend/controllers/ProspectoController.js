@@ -1,5 +1,6 @@
 // backend/controllers/prospectoController.js
 import Prospecto from '../models/Prospecto.js';
+import { enviarReporteConfianza } from '../services/emailService.js';
 
 const ESTADOS_CIVIL_VALIDOS = ['soltero', 'casado', 'union_libre'];
 const NIVELES_ESTUDIO_VALIDOS = ['primaria', 'secundaria', 'preparatoria', 'licenciatura', 'posgrado'];
@@ -165,6 +166,39 @@ export const registrarProspecto = async (req, res) => {
     });
 
     await nuevoProspecto.save();
+
+    // HU-008: Verificar si hay 5+ prospectos de confianza para notificar
+    if (nuevoProspecto.cumpleFiltros) {
+      const prospectosConfianza = await Prospecto.countDocuments({
+        cumpleFiltros: true,
+        reporteEnviado: false,
+      });
+
+      if (prospectosConfianza >= 5) {
+        console.log(`[ProspectoController] Se alcanzaron ${prospectosConfianza} prospectos de confianza. Enviando notificación...`);
+        
+        const prospectos = await Prospecto.find({
+          cumpleFiltros: true,
+          reporteEnviado: false,
+        })
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .lean();
+
+        try {
+          await enviarReporteConfianza(prospectos);
+          
+          await Prospecto.updateMany(
+            { _id: { $in: prospectos.map(p => p._id) } },
+            { $set: { reporteEnviado: true } }
+          );
+          
+          console.log(`[ProspectoController] Notificación enviada exitosamente para ${prospectos.length} prospectos`);
+        } catch (error) {
+          console.error('[ProspectoController] Error al enviar notificación:', error);
+        }
+      }
+    }
 
     res.status(201).json({
       success: true,
