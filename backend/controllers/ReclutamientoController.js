@@ -1,7 +1,7 @@
 import Reclutamiento from '../models/Reclutamiento.js';
 
 // Registrar nuevo candidato
-exports.registrar = async (req, res) => {
+export const registrar = async (req, res) => {
   try {
     const { nombre, telefono, email, experiencia, disponibilidad, motivacion } = req.body;
 
@@ -53,7 +53,7 @@ exports.registrar = async (req, res) => {
 };
 
 // Obtener todos los registros (para admin)
-exports.obtenerTodos = async (req, res) => {
+export const obtenerTodos = async (req, res) => {
   try {
     const registros = await Reclutamiento.find()
       .sort({ fechaRegistro: -1 })
@@ -74,7 +74,7 @@ exports.obtenerTodos = async (req, res) => {
 };
 
 // Obtener registro por ID
-exports.obtenerPorId = async (req, res) => {
+export const obtenerPorId = async (req, res) => {
   try {
     const { id } = req.params;
     const registro = await Reclutamiento.findById(id).select('-__v');
@@ -99,7 +99,7 @@ exports.obtenerPorId = async (req, res) => {
 };
 
 // Actualizar status del candidato
-exports.actualizarStatus = async (req, res) => {
+export const actualizarStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -137,7 +137,7 @@ exports.actualizarStatus = async (req, res) => {
 };
 
 // Eliminar registro
-exports.eliminar = async (req, res) => {
+export const eliminar = async (req, res) => {
   try {
     const { id } = req.params;
     const registro = await Reclutamiento.findByIdAndDelete(id);
