@@ -551,12 +551,12 @@ function Home() {
                   objectFit="cover"
                 />
                 <VStack align="flex-start" spacing={6}>
-                  <Heading as="h2" size="xl">
+                  <Heading as="h2" size="xl" color="orange.600">
                     ¿Por qué elegir Royal Prestige?
                   </Heading>
                   <HStack spacing={4}>
                     <Box
-                      bg="blue.600"
+                      bg="orange.600"
                       color="white"
                       w="12"
                       h="12"
@@ -570,7 +570,7 @@ function Home() {
                       ✓
                     </Box>
                     <VStack align="flex-start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="lg" color="blue.600">
+                      <Text fontWeight="bold" fontSize="lg" color="orange.600">
                         65+ años de experiencia
                       </Text>
                       <Text color="gray.600">Tradición y confianza en cada producto</Text>
@@ -593,7 +593,7 @@ function Home() {
                       ✓
                     </Box>
                     <VStack align="flex-start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="lg" color="blue.600">
+                      <Text fontWeight="bold" fontSize="lg" color="orange.600">
                         50 años de garantía
                       </Text>
                       <Text color="gray.600">Respaldamos nuestros productos</Text>
@@ -602,7 +602,7 @@ function Home() {
 
                   <HStack spacing={4}>
                     <Box
-                      bg="blue.600"
+                      bg="orange.600"
                       color="white"
                       w="12"
                       h="12"
@@ -616,7 +616,7 @@ function Home() {
                       ✓
                     </Box>
                     <VStack align="flex-start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="lg" color="blue.600">
+                      <Text fontWeight="bold" fontSize="lg" color="orange.600">
                         Tecnología patentada
                       </Text>
                       <Text color="gray.600">Sistema de distribución de calor revolucionario</Text>
@@ -625,7 +625,7 @@ function Home() {
 
                   <HStack spacing={4}>
                     <Box
-                      bg="blue.600"
+                      bg="orange.600"
                       color="white"
                       w="12"
                       h="12"
@@ -639,7 +639,7 @@ function Home() {
                       ✓
                     </Box>
                     <VStack align="flex-start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="lg" color="blue.600">
+                      <Text fontWeight="bold" fontSize="lg" color="orange.600">
                         Sostenible y ético
                       </Text>
                       <Text color="gray.600">Compromiso con el medio ambiente</Text>
