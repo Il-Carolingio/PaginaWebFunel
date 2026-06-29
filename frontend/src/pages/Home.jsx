@@ -12,6 +12,11 @@ import {
   VStack,
   HStack,
   Icon,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
@@ -28,6 +33,9 @@ const MotionHeading = motion(Heading);
 const MotionText = motion(Text);
 
 function Home() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedImage, setSelectedImage] = useState(null);
+  
   const heroSlides = [
     {
       type: 'video',
@@ -427,9 +435,14 @@ function Home() {
                     boxShadow="lg"
                     _hover={{ transform: 'translateY(-8px)', boxShadow: 'xl' }}
                     transition="all 0.3s"
+                    cursor="pointer"
+                    onClick={() => {
+                      setSelectedImage('/homeImages/SartenesEasyRelease.png');
+                      onOpen();
+                    }}
                   >
                     <Image
-                      src="../../public/homeImages/SartenesEasyRelease.png"
+                      src="/homeImages/SartenesEasyRelease.png"
                       alt="Sartenes Royal Prestige"
                       w="100%"
                       h="250px"
@@ -456,9 +469,14 @@ function Home() {
                     boxShadow="lg"
                     _hover={{ transform: 'translateY(-8px)', boxShadow: 'xl' }}
                     transition="all 0.3s"
+                    cursor="pointer"
+                    onClick={() => {
+                      setSelectedImage('/homeImages/Ollas-Presion-Lux.png');
+                      onOpen();
+                    }}
                   >
                     <Image
-                      src="https://images.unsplash.com/photo-1584982751601-97d9301a41b6?w=400&h=300&fit=crop"
+                      src="/homeImages/Ollas-Presion-Lux.png"
                       alt="Olla a presión"
                       w="100%"
                       h="250px"
@@ -485,9 +503,14 @@ function Home() {
                     boxShadow="lg"
                     _hover={{ transform: 'translateY(-8px)', boxShadow: 'xl' }}
                     transition="all 0.3s"
+                    cursor="pointer"
+                    onClick={() => {
+                      setSelectedImage('/homeImages/AccesoriosPremium.png');
+                      onOpen();
+                    }}
                   >
                     <Image
-                      src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop"
+                      src="/homeImages/AccesoriosPremium.png"
                       alt="Accesorios de cocina"
                       w="100%"
                       h="250px"
@@ -624,6 +647,22 @@ function Home() {
               </Grid>
             </Container>
           </Box>
+
+          {/* Modal de ampliación de imágenes */}
+          <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
+            <ModalOverlay />
+            <ModalContent maxW="90vw" maxH="90vh" p={0}>
+              <ModalCloseButton />
+              <Image
+                src={selectedImage}
+                alt="Imagen ampliada"
+                w="100%"
+                h="auto"
+                objectFit="contain"
+                borderRadius="md"
+              />
+            </ModalContent>
+          </Modal>
 
           {/* CTA Final */}
           <Box bg="rgba(255, 255, 255, 0.92)" py={12} backdropFilter="blur(10px)">
