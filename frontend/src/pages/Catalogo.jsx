@@ -1,6 +1,5 @@
 // frontend/src/pages/Catalogo.jsx
-import { Box, Heading, Text, Button, VStack, Icon } from '@chakra-ui/react';
-import { DownloadIcon } from '@chakra-ui/icons';
+import { Box, Heading, Text, VStack } from '@chakra-ui/react';
 import multipan from '../assets/images/multiPan.png';
 
 const PDF_URL = '/catalogo/Novel Catalog_DIGITAL.pdf';
