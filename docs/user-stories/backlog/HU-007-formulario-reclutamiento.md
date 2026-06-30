@@ -1,6 +1,6 @@
 # HU-007: Formulario de Registro para Reclutamiento de Equipo de Ventas
 
-**Estado:** Pendiente de aprobación
+**Estado:** ✅ Aprobada
 **Prioridad:** Alta
 **Sprint:** 4
 **Esfuerzo estimado:** 6 horas
