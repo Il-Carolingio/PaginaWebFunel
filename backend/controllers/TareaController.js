@@ -71,7 +71,7 @@ export const actualizarTarea = async (req, res) => {
     const tarea = await Tarea.findOneAndUpdate(
       { _id: req.params.id, vendedorId: req.usuario.id },
       { tipo, titulo, descripcion, fecha, hora, estado, prospectoId, ubicacion },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     ).populate('prospectoId', 'nombre telefono');
 
     if (!tarea) {

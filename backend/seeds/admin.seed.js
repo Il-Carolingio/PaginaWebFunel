@@ -66,7 +66,7 @@ if (process.argv.includes('--reset')) {
       const admin = await Usuario.findOneAndUpdate(
         { email: 'admin@cosinatech.com' },
         { password: 'admin123' },
-        { new: true }
+        { returnDocument: 'after' }
       );
 
       if (admin) {
