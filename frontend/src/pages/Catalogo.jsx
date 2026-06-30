@@ -43,7 +43,7 @@ function Catalogo() {
           <VStack spacing={6} align="stretch">
             {/* Encabezado */}
             <Box textAlign="center">
-              <Heading as="h2" size="lg" mb={2}>
+              <Heading as="h2" size="lg" mb={2} color="blue.800">
                 📦 Catálogo de Productos
               </Heading>
               <Text fontSize="md" color="gray.600" mb={4}>
