@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 function Crm() {
   const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const { usuario, login, logout } = useAuth();
+  const { usuario, login, logout, actualizarUsuario } = useAuth();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -184,9 +184,9 @@ function Crm() {
           status: 'success',
           duration: 3000
         });
+        // Actualizar el contexto sin recargar la página
+        actualizarUsuario(data.usuario);
         setModoEdicion(false);
-        // Recargar la página para actualizar el contexto
-        window.location.reload();
       } else {
         toast({
           title: data.message || 'Error al actualizar perfil',
