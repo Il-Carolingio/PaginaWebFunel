@@ -43,6 +43,18 @@ function Crm() {
     }
   }, [usuario]);
 
+  // Cargar datos del usuario en el formulario cuando se activa el modo edición
+  useEffect(() => {
+    if (modoEdicion && usuario) {
+      setFormPerfil({
+        nombre: usuario.nombre || '',
+        telefono: usuario.telefono || '',
+        direccion: usuario.direccion || '',
+        contrato: usuario.contrato || ''
+      });
+    }
+  }, [modoEdicion, usuario]);
+
   const cargarTareas = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -138,6 +150,61 @@ function Crm() {
     });
   };
 
+  const handleEditarPerfil = () => {
+    setModoEdicion(true);
+  };
+
+  const handleCancelarEdicion = () => {
+    setModoEdicion(false);
+    setFormPerfil({
+      nombre: '',
+      telefono: '',
+      direccion: '',
+      contrato: ''
+    });
+  };
+
+  const handleGuardarPerfil = async () => {
+    setGuardandoPerfil(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/vendedor/perfil', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formPerfil)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast({
+          title: 'Perfil actualizado exitosamente',
+          status: 'success',
+          duration: 3000
+        });
+        setModoEdicion(false);
+        // Recargar la página para actualizar el contexto
+        window.location.reload();
+      } else {
+        toast({
+          title: data.message || 'Error al actualizar perfil',
+          status: 'error',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error al actualizar perfil',
+        status: 'error',
+        duration: 3000
+      });
+    } finally {
+      setGuardandoPerfil(false);
+    }
+  };
+
   const tareasPendientes = tareas.filter(t => t.estado === 'pendiente');
   const tareasCompletadas = tareas.filter(t => t.estado === 'completada');
 
@@ -216,73 +283,6 @@ function Crm() {
       </Box>
     );
   }
-
-  // Cargar datos del usuario en el formulario cuando se activa el modo edición
-  useEffect(() => {
-    if (modoEdicion && usuario) {
-      setFormPerfil({
-        nombre: usuario.nombre || '',
-        telefono: usuario.telefono || '',
-        direccion: usuario.direccion || '',
-        contrato: usuario.contrato || ''
-      });
-    }
-  }, [modoEdicion, usuario]);
-
-  const handleEditarPerfil = () => {
-    setModoEdicion(true);
-  };
-
-  const handleCancelarEdicion = () => {
-    setModoEdicion(false);
-    setFormPerfil({
-      nombre: '',
-      telefono: '',
-      direccion: '',
-      contrato: ''
-    });
-  };
-
-  const handleGuardarPerfil = async () => {
-    setGuardandoPerfil(true);
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/vendedor/perfil', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formPerfil)
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        toast({
-          title: 'Perfil actualizado exitosamente',
-          status: 'success',
-          duration: 3000
-        });
-        setModoEdicion(false);
-        // Recargar la página para actualizar el contexto
-        window.location.reload();
-      } else {
-        toast({
-          title: data.message || 'Error al actualizar perfil',
-          status: 'error',
-          duration: 5000
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Error al actualizar perfil',
-        status: 'error',
-        duration: 3000
-      });
-    } finally {
-      setGuardandoPerfil(false);
-    }
-  };
 
   // Si hay usuario, mostrar dashboard
   return (
