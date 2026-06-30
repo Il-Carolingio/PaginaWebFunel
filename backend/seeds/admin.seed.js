@@ -28,7 +28,7 @@ const crearAdmin = async () => {
     // Crear usuario admin (el modelo hashea el password automáticamente)
     const admin = new Usuario({
       email: 'admin@cosinatech.com',
-      password: 'admin',
+      password: 'admin123',
       nombre: 'Administrador',
       telefono: '',
       direccion: '',
@@ -41,7 +41,7 @@ const crearAdmin = async () => {
 
     console.log('✅ Usuario administrador creado exitosamente:\n');
     console.log('   📧 Email: admin@cosinatech.com');
-    console.log('   🔑 Contraseña: admin');
+    console.log('   🔑 Contraseña: admin123');
     console.log('   👤 Nombre: Administrador');
     console.log('   🔐 Rol: admin');
     console.log('   ✅ Activo: true\n');
@@ -65,14 +65,14 @@ if (process.argv.includes('--reset')) {
 
       const admin = await Usuario.findOneAndUpdate(
         { email: 'admin@cosinatech.com' },
-        { password: 'admin' },
+        { password: 'admin123' },
         { new: true }
       );
 
       if (admin) {
         console.log('✅ Contraseña actualizada exitosamente\n');
         console.log('   📧 Email: admin@cosinatech.com');
-        console.log('   🔑 Contraseña: admin\n');
+        console.log('   🔑 Contraseña: admin123\n');
       } else {
         console.log('❌ Usuario admin no encontrado. Ejecuta el script sin --reset primero.\n');
       }
