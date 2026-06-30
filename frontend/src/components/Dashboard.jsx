@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
 import { useAuth } from '../context/AuthContext';
 
-function Crm() {
+function Dashboard() {
   const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const { usuario, login, logout } = useAuth();
+  const { usuario } = useAuth();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -20,18 +20,9 @@ function Crm() {
     ubicacion: ''
   });
 
-  const [formLogin, setFormLogin] = useState({
-    email: '',
-    password: ''
-  });
-
-  const [loginCargando, setLoginCargando] = useState(false);
-
   useEffect(() => {
-    if (usuario) {
-      cargarTareas();
-    }
-  }, [usuario]);
+    cargarTareas();
+  }, []);
 
   const cargarTareas = async () => {
     try {
@@ -52,30 +43,6 @@ function Crm() {
     } finally {
       setCargando(false);
     }
-  };
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoginCargando(true);
-
-    const resultado = await login(formLogin.email, formLogin.password);
-
-    if (resultado.success) {
-      toast({
-        title: 'Inicio de sesión exitoso',
-        status: 'success',
-        duration: 3000
-      });
-      setFormLogin({ email: '', password: '' });
-    } else {
-      toast({
-        title: resultado.message,
-        status: 'error',
-        duration: 5000
-      });
-    }
-
-    setLoginCargando(false);
   };
 
   const handleSubmitTarea = async (e) => {
@@ -119,15 +86,6 @@ function Crm() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    toast({
-      title: 'Sesión cerrada',
-      status: 'info',
-      duration: 3000
-    });
-  };
-
   const tareasPendientes = tareas.filter(t => t.estado === 'pendiente');
   const tareasCompletadas = tareas.filter(t => t.estado === 'completada');
 
@@ -151,79 +109,17 @@ function Crm() {
     return labels[tipo] || tipo;
   };
 
-  // Si no hay usuario, mostrar login
-  if (!usuario) {
-    return (
-      <Box minH="100vh" bg="gray.50" display="flex" alignItems="center" justifyContent="center" p={4}>
-        <Container maxW="md">
-          <Box bg="white" p={8} borderRadius="xl" boxShadow="2xl">
-            <VStack spacing={6}>
-              <Box textAlign="center">
-                <Heading as="h1" size="xl" color="orange.500" mb={2}>
-                  CRM Royal Prestige
-                </Heading>
-                <Text color="gray.600">Inicia sesión para acceder al panel de vendedores</Text>
-              </Box>
-
-              <form onSubmit={handleLogin} style={{ width: '100%' }}>
-                <VStack spacing={4}>
-                  <Input
-                    type="email"
-                    placeholder="Correo electrónico"
-                    value={formLogin.email}
-                    onChange={(e) => setFormLogin({...formLogin, email: e.target.value})}
-                    required
-                    size="lg"
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Contraseña"
-                    value={formLogin.password}
-                    onChange={(e) => setFormLogin({...formLogin, password: e.target.value})}
-                    required
-                    size="lg"
-                  />
-                  <Button
-                    type="submit"
-                    colorScheme="orange"
-                    size="lg"
-                    width="100%"
-                    isLoading={loginCargando}
-                    _hover={{ transform: 'scale(1.02)' }}
-                    transition="all 0.2s"
-                  >
-                    Iniciar Sesión
-                  </Button>
-                </VStack>
-              </form>
-
-              <Text fontSize="sm" color="gray.500" textAlign="center">
-                ¿Problemas para acceder? Contacta al administrador
-              </Text>
-            </VStack>
-          </Box>
-        </Container>
-      </Box>
-    );
-  }
-
-  // Si hay usuario, mostrar dashboard
   return (
     <Box minH="100vh" bg="gray.50" p={{ base: 4, md: 8 }}>
       <Box maxW="1200px" mx="auto">
         {/* Encabezado */}
-        <Box mb={8} display="flex" justifyContent="space-between" alignItems="center">
-          <Box>
-            <Heading as="h1" size="xl" color="orange.500" mb={2}>
-              Dashboard CRM
-            </Heading>
-            <Text color="gray.600">
-              Bienvenido, {usuario.nombre}
-            </Text>
-          </Box>
-          <Button colorScheme="red" variant="outline" onClick={handleLogout}>
-            Cerrar Sesión
-          </Button>
+        <Box mb={8}>
+          <Heading as="h1" size="xl" color="orange.500" mb={2}>
+            Dashboard CRM
+          </Heading>
+          <Text color="gray.600">
+            Bienvenido, {usuario?.nombre}
+          </Text>
         </Box>
 
         {/* Estadísticas */}
@@ -312,23 +208,23 @@ function Crm() {
                   <Heading as="h3" size="lg" mb={4}>Mi Perfil</Heading>
                   <Box>
                     <Text fontWeight="bold">Nombre:</Text>
-                    <Text>{usuario.nombre}</Text>
+                    <Text>{usuario?.nombre}</Text>
                   </Box>
                   <Box>
                     <Text fontWeight="bold">Email:</Text>
-                    <Text>{usuario.email}</Text>
+                    <Text>{usuario?.email}</Text>
                   </Box>
                   <Box>
                     <Text fontWeight="bold">Teléfono:</Text>
-                    <Text>{usuario.telefono || 'No especificado'}</Text>
+                    <Text>{usuario?.telefono || 'No especificado'}</Text>
                   </Box>
                   <Box>
                     <Text fontWeight="bold">Dirección:</Text>
-                    <Text>{usuario.direccion || 'No especificada'}</Text>
+                    <Text>{usuario?.direccion || 'No especificada'}</Text>
                   </Box>
                   <Box>
                     <Text fontWeight="bold">Contrato:</Text>
-                    <Text>{usuario.contrato || 'No especificado'}</Text>
+                    <Text>{usuario?.contrato || 'No especificado'}</Text>
                   </Box>
                 </VStack>
               </Box>
@@ -421,4 +317,4 @@ function Crm() {
   );
 }
 
-export default Crm;
+export default Dashboard;

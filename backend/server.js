@@ -6,6 +6,9 @@ import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import { registrarProspecto } from './controllers/ProspectoController.js';
 import { enviarReporte } from './controllers/ReporteConfianzaController.js';
+import authRoutes from './routes/auth.js';
+import vendedorRoutes from './routes/vendedor.js';
+import tareasRoutes from './routes/tareas.js';
 import reclutamientoRoutes from './routes/reclutamiento.js';
 
 dotenv.config();
@@ -38,6 +41,15 @@ const reporteLimiter = rateLimit({
 
 // Enviar reporte de prospectos confiables (protegido con API Key + rate limiting)
 app.post('/api/rifa/reporte-confianza/enviar', reporteLimiter, enviarReporte);
+
+// Rutas de autenticación
+app.use('/api/auth', authRoutes);
+
+// Rutas de vendedor
+app.use('/api/vendedor', vendedorRoutes);
+
+// Rutas de tareas
+app.use('/api/tareas', tareasRoutes);
 
 // Rutas de reclutamiento
 app.use('/api/reclutamiento', reclutamientoRoutes);
