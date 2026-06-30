@@ -1,6 +1,6 @@
 # HU-010: Login y Dashboard de CRM para Vendedores
 
-**Estado:** ✅ Aprobada
+**Estado:** ✅ Completada
 **Prioridad:** Media
 **Sprint:** 4
 **Esfuerzo estimado:** 8 horas
