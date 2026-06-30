@@ -27,6 +27,16 @@ function Crm() {
 
   const [loginCargando, setLoginCargando] = useState(false);
 
+  // Estado para edición de perfil
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [formPerfil, setFormPerfil] = useState({
+    nombre: '',
+    telefono: '',
+    direccion: '',
+    contrato: ''
+  });
+  const [guardandoPerfil, setGuardandoPerfil] = useState(false);
+
   useEffect(() => {
     if (usuario) {
       cargarTareas();
@@ -207,6 +217,73 @@ function Crm() {
     );
   }
 
+  // Cargar datos del usuario en el formulario cuando se activa el modo edición
+  useEffect(() => {
+    if (modoEdicion && usuario) {
+      setFormPerfil({
+        nombre: usuario.nombre || '',
+        telefono: usuario.telefono || '',
+        direccion: usuario.direccion || '',
+        contrato: usuario.contrato || ''
+      });
+    }
+  }, [modoEdicion, usuario]);
+
+  const handleEditarPerfil = () => {
+    setModoEdicion(true);
+  };
+
+  const handleCancelarEdicion = () => {
+    setModoEdicion(false);
+    setFormPerfil({
+      nombre: '',
+      telefono: '',
+      direccion: '',
+      contrato: ''
+    });
+  };
+
+  const handleGuardarPerfil = async () => {
+    setGuardandoPerfil(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/vendedor/perfil', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formPerfil)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast({
+          title: 'Perfil actualizado exitosamente',
+          status: 'success',
+          duration: 3000
+        });
+        setModoEdicion(false);
+        // Recargar la página para actualizar el contexto
+        window.location.reload();
+      } else {
+        toast({
+          title: data.message || 'Error al actualizar perfil',
+          status: 'error',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error al actualizar perfil',
+        status: 'error',
+        duration: 3000
+      });
+    } finally {
+      setGuardandoPerfil(false);
+    }
+  };
+
   // Si hay usuario, mostrar dashboard
   return (
     <Box minH="100vh" bg="gray.50" p={{ base: 4, md: 8 }}>
@@ -309,27 +386,101 @@ function Crm() {
             <TabPanel>
               <Box bg="white" p={8} borderRadius="xl" boxShadow="md">
                 <VStack spacing={4} align="stretch">
-                  <Heading as="h3" size="lg" mb={4}>Mi Perfil</Heading>
-                  <Box>
-                    <Text fontWeight="bold">Nombre:</Text>
-                    <Text>{usuario.nombre}</Text>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Heading as="h3" size="lg">Mi Perfil</Heading>
+                    {!modoEdicion && (
+                      <Button colorScheme="orange" size="sm" onClick={handleEditarPerfil}>
+                        Editar
+                      </Button>
+                    )}
                   </Box>
-                  <Box>
-                    <Text fontWeight="bold">Email:</Text>
-                    <Text>{usuario.email}</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Teléfono:</Text>
-                    <Text>{usuario.telefono || 'No especificado'}</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Dirección:</Text>
-                    <Text>{usuario.direccion || 'No especificada'}</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="bold">Contrato:</Text>
-                    <Text>{usuario.contrato || 'No especificado'}</Text>
-                  </Box>
+
+                  {modoEdicion ? (
+                    // Modo edición
+                    <>
+                      <FormControl isRequired>
+                        <FormLabel>Nombre</FormLabel>
+                        <Input
+                          value={formPerfil.nombre}
+                          onChange={(e) => setFormPerfil({...formPerfil, nombre: e.target.value})}
+                          placeholder="Nombre completo"
+                        />
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel>Email (no modificable)</FormLabel>
+                        <Input
+                          value={usuario.email}
+                          isReadOnly
+                          bg="gray.100"
+                        />
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel>Teléfono</FormLabel>
+                        <Input
+                          value={formPerfil.telefono}
+                          onChange={(e) => setFormPerfil({...formPerfil, telefono: e.target.value})}
+                          placeholder="Ej: 4421234567"
+                        />
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel>Dirección</FormLabel>
+                        <Input
+                          value={formPerfil.direccion}
+                          onChange={(e) => setFormPerfil({...formPerfil, direccion: e.target.value})}
+                          placeholder="Dirección completa"
+                        />
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel>Contrato</FormLabel>
+                        <Input
+                          value={formPerfil.contrato}
+                          onChange={(e) => setFormPerfil({...formPerfil, contrato: e.target.value})}
+                          placeholder="Número de contrato (opcional)"
+                        />
+                      </FormControl>
+
+                      <HStack spacing={3} pt={4}>
+                        <Button
+                          colorScheme="orange"
+                          onClick={handleGuardarPerfil}
+                          isLoading={guardandoPerfil}
+                        >
+                          Guardar
+                        </Button>
+                        <Button variant="ghost" onClick={handleCancelarEdicion}>
+                          Cancelar
+                        </Button>
+                      </HStack>
+                    </>
+                  ) : (
+                    // Modo visualización
+                    <>
+                      <Box>
+                        <Text fontWeight="bold">Nombre:</Text>
+                        <Text>{usuario.nombre}</Text>
+                      </Box>
+                      <Box>
+                        <Text fontWeight="bold">Email:</Text>
+                        <Text>{usuario.email}</Text>
+                      </Box>
+                      <Box>
+                        <Text fontWeight="bold">Teléfono:</Text>
+                        <Text>{usuario.telefono || 'No especificado'}</Text>
+                      </Box>
+                      <Box>
+                        <Text fontWeight="bold">Dirección:</Text>
+                        <Text>{usuario.direccion || 'No especificada'}</Text>
+                      </Box>
+                      <Box>
+                        <Text fontWeight="bold">Contrato:</Text>
+                        <Text>{usuario.contrato || 'No especificado'}</Text>
+                      </Box>
+                    </>
+                  )}
                 </VStack>
               </Box>
             </TabPanel>
