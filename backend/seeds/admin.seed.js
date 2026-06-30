@@ -25,13 +25,10 @@ const crearAdmin = async () => {
       process.exit(0);
     }
 
-    // Crear usuario admin
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash('admin', salt);
-
+    // Crear usuario admin (el modelo hashea el password automáticamente)
     const admin = new Usuario({
       email: 'admin@cosinatech.com',
-      password: passwordHash,
+      password: 'admin',
       nombre: 'Administrador',
       telefono: '',
       direccion: '',
@@ -66,12 +63,9 @@ if (process.argv.includes('--reset')) {
       await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/royal_prestige');
       console.log('🔄 Reseteando contraseña de admin...\n');
 
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash('admin', salt);
-
       const admin = await Usuario.findOneAndUpdate(
         { email: 'admin@cosinatech.com' },
-        { password: passwordHash },
+        { password: 'admin' },
         { new: true }
       );
 
