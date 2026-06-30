@@ -135,3 +135,56 @@ export const verificarToken = async (req, res) => {
     });
   }
 };
+
+// POST /api/auth/cambiar-password - Cambiar contraseña
+export const cambiarPassword = async (req, res) => {
+  try {
+    const { passwordActual, passwordNuevo } = req.body;
+    const usuarioId = req.usuario.id;
+
+    if (!passwordActual || !passwordNuevo) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña actual y la nueva son requeridas'
+      });
+    }
+
+    if (passwordNuevo.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'La nueva contraseña debe tener al menos 6 caracteres'
+      });
+    }
+
+    const usuario = await Usuario.findById(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    const passwordCoincide = await usuario.compararPassword(passwordActual);
+    if (!passwordCoincide) {
+      return res.status(401).json({
+        success: false,
+        message: 'La contraseña actual es incorrecta'
+      });
+    }
+
+    usuario.password = passwordNuevo;
+    await usuario.save();
+
+    res.json({
+      success: true,
+      message: 'Contraseña actualizada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al cambiar contraseña:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al cambiar la contraseña',
+      error: error.message
+    });
+  }
+};

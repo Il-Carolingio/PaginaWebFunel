@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, registro, verificarToken } from '../controllers/AuthController.js';
+import { login, registro, verificarToken, cambiarPassword } from '../controllers/AuthController.js';
 import { verificarToken as authMiddleware, esAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -10,5 +10,6 @@ router.post('/registro', authMiddleware, esAdmin, registro);
 
 // Rutas protegidas
 router.get('/verificar', authMiddleware, verificarToken);
+router.post('/cambiar-password', authMiddleware, cambiarPassword);
 
 export default router;

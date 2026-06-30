@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container, Progress, Alert, AlertIcon } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 
 function Crm() {
@@ -202,6 +205,105 @@ function Crm() {
       });
     } finally {
       setGuardandoPerfil(false);
+    }
+  };
+
+  // Estado para cambio de contraseña
+  const [modoCambioPassword, setModoCambioPassword] = useState(false);
+  const [cambiandoPassword, setCambiandoPassword] = useState(false);
+
+  const passwordSchema = yup.object().shape({
+    passwordActual: yup.string().required('La contraseña actual es requerida'),
+    passwordNuevo: yup.string()
+      .required('La nueva contraseña es requerida')
+      .min(8, 'Mínimo 8 caracteres')
+      .matches(/[A-Z]/, 'Debe contener al menos una mayúscula')
+      .matches(/[a-z]/, 'Debe contener al menos una minúscula')
+      .matches(/[0-9]/, 'Debe contener al menos un número')
+      .matches(/[^A-Za-z0-9]/, 'Debe contener al menos un carácter especial'),
+    confirmarPassword: yup.string()
+      .required('Confirma la nueva contraseña')
+      .oneOf([yup.ref('passwordNuevo')], 'Las contraseñas no coinciden')
+  });
+
+  const { register: registerPassword, handleSubmit: handleSubmitPassword, formState: { errors: errorsPassword }, watch: watchPassword, reset: resetPassword } = useForm({
+    resolver: yupResolver(passwordSchema)
+  });
+
+  const passwordNuevo = watchPassword('passwordNuevo');
+
+  const getFortalezaPassword = (password) => {
+    if (!password) return 0;
+    let fortaleza = 0;
+    if (password.length >= 8) fortaleza += 20;
+    if (/[A-Z]/.test(password)) fortaleza += 20;
+    if (/[a-z]/.test(password)) fortaleza += 20;
+    if (/[0-9]/.test(password)) fortaleza += 20;
+    if (/[^A-Za-z0-9]/.test(password)) fortaleza += 20;
+    return fortaleza;
+  };
+
+  const getColorFortaleza = (fortaleza) => {
+    if (fortaleza <= 20) return 'red';
+    if (fortaleza <= 40) return 'orange';
+    if (fortaleza <= 60) return 'yellow';
+    if (fortaleza <= 80) return 'blue';
+    return 'green';
+  };
+
+  const getLabelFortaleza = (fortaleza) => {
+    if (fortaleza <= 20) return 'Muy débil';
+    if (fortaleza <= 40) return 'Débil';
+    if (fortaleza <= 60) return 'Regular';
+    if (fortaleza <= 80) return 'Buena';
+    return 'Excelente';
+  };
+
+  const handleCambiarPassword = async (data) => {
+    setCambiandoPassword(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/auth/cambiar-password', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          passwordActual: data.passwordActual,
+          passwordNuevo: data.passwordNuevo
+        })
+      });
+
+      const result = await res.json();
+      if (result.success) {
+        toast({
+          title: 'Contraseña actualizada exitosamente',
+          description: 'Por seguridad, deberás iniciar sesión nuevamente',
+          status: 'success',
+          duration: 5000
+        });
+        setModoCambioPassword(false);
+        resetPassword();
+        // Cerrar sesión después de cambiar contraseña
+        setTimeout(() => {
+          handleLogout();
+        }, 2000);
+      } else {
+        toast({
+          title: result.message || 'Error al cambiar contraseña',
+          status: 'error',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error al cambiar contraseña',
+        status: 'error',
+        duration: 3000
+      });
+    } finally {
+      setCambiandoPassword(false);
     }
   };
 
@@ -479,6 +581,96 @@ function Crm() {
                         <Text fontWeight="bold">Contrato:</Text>
                         <Text>{usuario.contrato || 'No especificado'}</Text>
                       </Box>
+
+                      {/* Sección de cambio de contraseña */}
+                      <Box mt={6} pt={6} borderTop="1px solid" borderColor="gray.200">
+                        <Heading as="h4" size="md" mb={4}>Cambiar Contraseña</Heading>
+                        {!modoCambioPassword ? (
+                          <Button colorScheme="orange" onClick={() => setModoCambioPassword(true)}>
+                            Cambiar Contraseña
+                          </Button>
+                        ) : (
+                          <Box as="form" onSubmit={handleSubmitPassword(handleCambiarPassword)}>
+                            <VStack spacing={4} align="stretch">
+                              <FormControl isInvalid={!!errorsPassword.passwordActual}>
+                                <FormLabel>Contraseña Actual</FormLabel>
+                                <Input
+                                  type="password"
+                                  {...registerPassword('passwordActual')}
+                                  placeholder="Ingresa tu contraseña actual"
+                                />
+                                {errorsPassword.passwordActual && (
+                                  <Text color="red.500" fontSize="sm">{errorsPassword.passwordActual.message}</Text>
+                                )}
+                              </FormControl>
+
+                              <FormControl isInvalid={!!errorsPassword.passwordNuevo}>
+                                <FormLabel>Nueva Contraseña</FormLabel>
+                                <Input
+                                  type="password"
+                                  {...registerPassword('passwordNuevo')}
+                                  placeholder="Ingresa la nueva contraseña"
+                                />
+                                {errorsPassword.passwordNuevo && (
+                                  <Text color="red.500" fontSize="sm">{errorsPassword.passwordNuevo.message}</Text>
+                                )}
+                                {passwordNuevo && (
+                                  <Box mt={2}>
+                                    <Text fontSize="sm" mb={1}>Fortaleza de la contraseña:</Text>
+                                    <Progress
+                                      value={getFortalezaPassword(passwordNuevo)}
+                                      colorScheme={getColorFortaleza(getFortalezaPassword(passwordNuevo))}
+                                      size="sm"
+                                      borderRadius="md"
+                                    />
+                                    <Text fontSize="xs" color="gray.600" mt={1}>
+                                      {getLabelFortaleza(getFortalezaPassword(passwordNuevo))}
+                                    </Text>
+                                  </Box>
+                                )}
+                              </FormControl>
+
+                              <FormControl isInvalid={!!errorsPassword.confirmarPassword}>
+                                <FormLabel>Confirmar Nueva Contraseña</FormLabel>
+                                <Input
+                                  type="password"
+                                  {...registerPassword('confirmarPassword')}
+                                  placeholder="Confirma la nueva contraseña"
+                                />
+                                {errorsPassword.confirmarPassword && (
+                                  <Text color="red.500" fontSize="sm">{errorsPassword.confirmarPassword.message}</Text>
+                                )}
+                              </FormControl>
+
+                              <Alert status="info" borderRadius="md">
+                                <AlertIcon />
+                                <Text fontSize="sm">
+                                  La contraseña debe contener: 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
+                                </Text>
+                              </Alert>
+
+                              <HStack spacing={3} pt={2}>
+                                <Button
+                                  type="submit"
+                                  colorScheme="orange"
+                                  isLoading={cambiandoPassword}
+                                >
+                                  Cambiar Contraseña
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setModoCambioPassword(false);
+                                    resetPassword();
+                                  }}
+                                >
+                                  Cancelar
+                                </Button>
+                              </HStack>
+                            </VStack>
+                          </Box>
+                        )}
+                      </Box>
                     </>
                   )}
                 </VStack>
@@ -486,87 +678,6 @@ function Crm() {
             </TabPanel>
           </TabPanels>
         </Tabs>
-
-        {/* Modal para crear tarea */}
-        <Modal isOpen={isOpen} onClose={onClose} size="lg">
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>Nueva Tarea</ModalHeader>
-            <form onSubmit={handleSubmitTarea}>
-              <ModalBody>
-                <VStack spacing={4}>
-                  <FormControl isRequired>
-                    <FormLabel>Tipo</FormLabel>
-                    <Select
-                      value={formTarea.tipo}
-                      onChange={(e) => setFormTarea({...formTarea, tipo: e.target.value})}
-                    >
-                      <option value="cita">Cita</option>
-                      <option value="llamada">Llamada</option>
-                      <option value="seguimiento">Seguimiento</option>
-                      <option value="evento">Evento</option>
-                    </Select>
-                  </FormControl>
-
-                  <FormControl isRequired>
-                    <FormLabel>Título</FormLabel>
-                    <Input
-                      value={formTarea.titulo}
-                      onChange={(e) => setFormTarea({...formTarea, titulo: e.target.value})}
-                      placeholder="Ej: Llamar a Juan Pérez"
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>Descripción</FormLabel>
-                    <Textarea
-                      value={formTarea.descripcion}
-                      onChange={(e) => setFormTarea({...formTarea, descripcion: e.target.value})}
-                      placeholder="Detalles adicionales..."
-                    />
-                  </FormControl>
-
-                  <HStack w="100%">
-                    <FormControl isRequired>
-                      <FormLabel>Fecha</FormLabel>
-                      <Input
-                        type="date"
-                        value={formTarea.fecha}
-                        onChange={(e) => setFormTarea({...formTarea, fecha: e.target.value})}
-                      />
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Hora</FormLabel>
-                      <Input
-                        type="time"
-                        value={formTarea.hora}
-                        onChange={(e) => setFormTarea({...formTarea, hora: e.target.value})}
-                      />
-                    </FormControl>
-                  </HStack>
-
-                  <FormControl>
-                    <FormLabel>Ubicación</FormLabel>
-                    <Input
-                      value={formTarea.ubicacion}
-                      onChange={(e) => setFormTarea({...formTarea, ubicacion: e.target.value})}
-                      placeholder="Ej: Oficina central, Casa del cliente..."
-                    />
-                  </FormControl>
-                </VStack>
-              </ModalBody>
-              <ModalFooter>
-                <Button variant="ghost" mr={3} onClick={onClose}>
-                  Cancelar
-                </Button>
-                <Button type="submit" colorScheme="orange">
-                  Crear Tarea
-                </Button>
-              </ModalFooter>
-            </form>
-          </ModalContent>
-        </Modal>
       </Box>
     </Box>
   );
