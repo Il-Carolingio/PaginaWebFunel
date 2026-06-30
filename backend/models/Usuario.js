@@ -69,6 +69,4 @@ usuarioSchema.methods.toJSON = function() {
   return obj;
 };
 
-usuarioSchema.index({ email: 1 }, { unique: true });
-
 export default mongoose.model('Usuario', usuarioSchema);
