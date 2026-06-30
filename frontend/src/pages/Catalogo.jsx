@@ -49,19 +49,6 @@ function Catalogo() {
               <Text fontSize="md" color="gray.600" mb={4}>
                 Explora nuestra colección completa de productos Royal Prestige
               </Text>
-              <Button
-                as="a"
-                href={PDF_URL}
-                download="Catalogo-Royal-Prestige.pdf"
-                colorScheme="orange"
-                size="lg"
-                leftIcon={<DownloadIcon />}
-                _hover={{ transform: 'scale(1.05)' }}
-                transition="all 0.2s"
-                boxShadow="0 4px 20px rgba(237, 137, 54, 0.4)"
-              >
-                Descargar Catálogo PDF
-              </Button>
             </Box>
 
             {/* Visor de PDF */}
