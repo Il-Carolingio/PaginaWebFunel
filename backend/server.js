@@ -6,6 +6,9 @@ import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import { registrarProspecto } from './controllers/ProspectoController.js';
 import { enviarReporte } from './controllers/ReporteConfianzaController.js';
+import tareasRoutes from './routes/tareas.js';
+import authRoutes from './routes/auth.js';
+import vendedorRoutes from './routes/vendedor.js';
 
 dotenv.config();
 
@@ -37,6 +40,11 @@ const reporteLimiter = rateLimit({
 
 // Enviar reporte de prospectos confiables (protegido con API Key + rate limiting)
 app.post('/api/rifa/reporte-confianza/enviar', reporteLimiter, enviarReporte);
+
+// Rutas de autenticación y CRM
+app.use('/api/auth', authRoutes);
+app.use('/api/tareas', tareasRoutes);
+app.use('/api/vendedor', vendedorRoutes);
 
 // Conectar a MongoDB y arrancar
 connectDB().then(() => {
