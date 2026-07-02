@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container, Progress, Alert, AlertIcon } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
+import { AddIcon, EditIcon } from '@chakra-ui/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -11,7 +11,8 @@ function Crm() {
   const [cargando, setCargando] = useState(true);
   const { usuario, login, logout, actualizarUsuario } = useAuth();
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenCrear, onOpen: onOpenCrear, onClose: onCloseCrear } = useDisclosure();
+  const { isOpen: isOpenEditar, onOpen: onOpenEditar, onClose: onCloseEditar } = useDisclosure();
 
   const [formTarea, setFormTarea] = useState({
     tipo: 'cita',
@@ -21,6 +22,17 @@ function Crm() {
     hora: '',
     prospectoId: '',
     ubicacion: ''
+  });
+
+  const [formEditar, setFormEditar] = useState({
+    _id: '',
+    tipo: 'cita',
+    titulo: '',
+    descripcion: '',
+    fecha: '',
+    hora: '',
+    ubicacion: '',
+    estado: 'pendiente'
   });
 
   const [formLogin, setFormLogin] = useState({
@@ -66,7 +78,9 @@ function Crm() {
       });
       const data = await res.json();
       if (data.success) {
-        setTareas(data.data);
+        // Ordenar: pendientes más antiguas primero, luego las de hoy, luego completadas
+        const ordenadas = ordenarTareas(data.data);
+        setTareas(ordenadas);
       }
     } catch (error) {
       toast({
@@ -77,6 +91,30 @@ function Crm() {
     } finally {
       setCargando(false);
     }
+  };
+
+  const ordenarTareas = (tareasList) => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    return [...tareasList].sort((a, b) => {
+      const fechaA = new Date(a.fecha);
+      const fechaB = new Date(b.fecha);
+      fechaA.setHours(0, 0, 0, 0);
+      fechaB.setHours(0, 0, 0, 0);
+
+      // Pendientes primero
+      if (a.estado === 'pendiente' && b.estado !== 'pendiente') return -1;
+      if (a.estado !== 'pendiente' && b.estado === 'pendiente') return 1;
+
+      // Si ambas son pendientes: las más antiguas primero
+      if (a.estado === 'pendiente' && b.estado === 'pendiente') {
+        return fechaA - fechaB;
+      }
+
+      // Si no son pendientes, ordenar por fecha descendente
+      return fechaB - fechaA;
+    });
   };
 
   const handleLogin = async (e) => {
@@ -123,7 +161,7 @@ function Crm() {
           status: 'success',
           duration: 3000
         });
-        onClose();
+        onCloseCrear();
         setFormTarea({
           tipo: 'cita',
           titulo: '',
@@ -138,6 +176,67 @@ function Crm() {
     } catch (error) {
       toast({
         title: 'Error al crear tarea',
+        status: 'error',
+        duration: 3000
+      });
+    }
+  };
+
+  const handleEditarTarea = (tarea) => {
+    const fechaLocal = new Date(tarea.fecha).toISOString().split('T')[0];
+    setFormEditar({
+      _id: tarea._id,
+      tipo: tarea.tipo,
+      titulo: tarea.titulo,
+      descripcion: tarea.descripcion || '',
+      fecha: fechaLocal,
+      hora: tarea.hora || '',
+      ubicacion: tarea.ubicacion || '',
+      estado: tarea.estado
+    });
+    onOpenEditar();
+  };
+
+  const handleGuardarEdicion = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/tareas/${formEditar._id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          tipo: formEditar.tipo,
+          titulo: formEditar.titulo,
+          descripcion: formEditar.descripcion,
+          fecha: formEditar.fecha,
+          hora: formEditar.hora,
+          ubicacion: formEditar.ubicacion,
+          estado: formEditar.estado
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast({
+          title: 'Tarea actualizada exitosamente',
+          status: 'success',
+          duration: 3000
+        });
+        onCloseEditar();
+        cargarTareas();
+      } else {
+        toast({
+          title: data.message || 'Error al actualizar tarea',
+          status: 'error',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error al actualizar tarea',
         status: 'error',
         duration: 3000
       });
@@ -187,7 +286,6 @@ function Crm() {
           status: 'success',
           duration: 3000
         });
-        // Actualizar el contexto sin recargar la página
         actualizarUsuario(data.usuario);
         setModoEdicion(false);
       } else {
@@ -285,7 +383,6 @@ function Crm() {
         });
         setModoCambioPassword(false);
         resetPassword();
-        // Cerrar sesión después de cambiar contraseña
         setTimeout(() => {
           handleLogout();
         }, 2000);
@@ -309,13 +406,16 @@ function Crm() {
 
   const tareasPendientes = tareas.filter(t => t.estado === 'pendiente');
   const tareasCompletadas = tareas.filter(t => t.estado === 'completada');
+  const tareasCanceladas = tareas.filter(t => t.estado === 'cancelada');
 
   const getColorTipo = (tipo) => {
     const colores = {
       cita: 'blue',
       llamada: 'green',
       seguimiento: 'purple',
-      evento: 'orange'
+      evento: 'orange',
+      entrevista: 'pink',
+      contrato: 'red'
     };
     return colores[tipo] || 'gray';
   };
@@ -325,7 +425,9 @@ function Crm() {
       cita: 'Cita',
       llamada: 'Llamada',
       seguimiento: 'Seguimiento',
-      evento: 'Evento'
+      evento: 'Evento',
+      entrevista: 'Entrevista',
+      contrato: 'Contrato'
     };
     return labels[tipo] || tipo;
   };
@@ -416,6 +518,10 @@ function Crm() {
             <Heading as="h2" size="2xl" color="green.500">{tareasCompletadas.length}</Heading>
           </Box>
           <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md">
+            <Text color="gray.600" fontSize="sm" mb={1}>Canceladas</Text>
+            <Heading as="h2" size="2xl" color="red.500">{tareasCanceladas.length}</Heading>
+          </Box>
+          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md">
             <Text color="gray.600" fontSize="sm" mb={1}>Total</Text>
             <Heading as="h2" size="2xl" color="blue.500">{tareas.length}</Heading>
           </Box>
@@ -435,7 +541,7 @@ function Crm() {
                 <Button
                   colorScheme="orange"
                   leftIcon={<AddIcon />}
-                  onClick={onOpen}
+                  onClick={onOpenCrear}
                 >
                   Nueva Tarea
                 </Button>
@@ -453,13 +559,13 @@ function Crm() {
                     tareas.map(tarea => (
                       <Box key={tarea._id} bg="white" p={6} borderRadius="xl" boxShadow="md">
                         <HStack justify="space-between" align="start">
-                          <VStack align="start" spacing={2}>
+                          <VStack align="start" spacing={2} flex="1">
                             <HStack>
                               <Badge colorScheme={getColorTipo(tarea.tipo)}>
                                 {getLabelTipo(tarea.tipo)}
                               </Badge>
-                              <Badge colorScheme={tarea.estado === 'pendiente' ? 'yellow' : 'green'}>
-                                {tarea.estado}
+                              <Badge colorScheme={tarea.estado === 'pendiente' ? 'yellow' : tarea.estado === 'completada' ? 'green' : 'red'}>
+                                {tarea.estado === 'pendiente' ? 'Pendiente' : tarea.estado === 'completada' ? 'Completada' : 'Cancelada'}
                               </Badge>
                             </HStack>
                             <Heading as="h3" size="md">{tarea.titulo}</Heading>
@@ -476,6 +582,15 @@ function Crm() {
                               </Text>
                             )}
                           </VStack>
+                          <Button
+                            colorScheme="orange"
+                            variant="ghost"
+                            size="sm"
+                            leftIcon={<EditIcon />}
+                            onClick={() => handleEditarTarea(tarea)}
+                          >
+                            Editar
+                          </Button>
                         </HStack>
                       </Box>
                     ))
@@ -498,7 +613,6 @@ function Crm() {
                   </Box>
 
                   {modoEdicion ? (
-                    // Modo edición
                     <>
                       <FormControl isRequired>
                         <FormLabel>Nombre</FormLabel>
@@ -559,7 +673,6 @@ function Crm() {
                       </HStack>
                     </>
                   ) : (
-                    // Modo visualización
                     <>
                       <Box>
                         <Text fontWeight="bold">Nombre:</Text>
@@ -679,6 +792,179 @@ function Crm() {
           </TabPanels>
         </Tabs>
       </Box>
+
+      {/* Modal de Crear Tarea */}
+      <Modal isOpen={isOpenCrear} onClose={onCloseCrear} size="lg">
+        <ModalOverlay />
+        <ModalContent>
+          <form onSubmit={handleSubmitTarea}>
+            <ModalHeader>Nueva Tarea</ModalHeader>
+            <ModalBody>
+              <VStack spacing={4}>
+                <FormControl isRequired>
+                  <FormLabel>Tipo de tarea</FormLabel>
+                  <Select
+                    value={formTarea.tipo}
+                    onChange={(e) => setFormTarea({...formTarea, tipo: e.target.value})}
+                  >
+                    <option value="llamada">📞 Llamada</option>
+                    <option value="cita">📅 Cita</option>
+                    <option value="evento">🎪 Evento</option>
+                    <option value="entrevista">🎤 Entrevista</option>
+                    <option value="contrato">📝 Contrato</option>
+                    <option value="seguimiento">🔄 Seguimiento</option>
+                  </Select>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel>Título</FormLabel>
+                  <Input
+                    value={formTarea.titulo}
+                    onChange={(e) => setFormTarea({...formTarea, titulo: e.target.value})}
+                    placeholder="Título de la tarea"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Descripción</FormLabel>
+                  <Textarea
+                    value={formTarea.descripcion}
+                    onChange={(e) => setFormTarea({...formTarea, descripcion: e.target.value})}
+                    placeholder="Descripción o comentarios"
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel>Fecha</FormLabel>
+                  <Input
+                    type="date"
+                    value={formTarea.fecha}
+                    onChange={(e) => setFormTarea({...formTarea, fecha: e.target.value})}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Hora</FormLabel>
+                  <Input
+                    type="time"
+                    value={formTarea.hora}
+                    onChange={(e) => setFormTarea({...formTarea, hora: e.target.value})}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Ubicación</FormLabel>
+                  <Input
+                    value={formTarea.ubicacion}
+                    onChange={(e) => setFormTarea({...formTarea, ubicacion: e.target.value})}
+                    placeholder="Dirección o lugar"
+                  />
+                </FormControl>
+              </VStack>
+            </ModalBody>
+            <ModalFooter>
+              <Button type="submit" colorScheme="orange" mr={3}>
+                Guardar
+              </Button>
+              <Button variant="ghost" onClick={onCloseCrear}>
+                Cancelar
+              </Button>
+            </ModalFooter>
+          </form>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal de Editar Tarea */}
+      <Modal isOpen={isOpenEditar} onClose={onCloseEditar} size="lg">
+        <ModalOverlay />
+        <ModalContent>
+          <form onSubmit={handleGuardarEdicion}>
+            <ModalHeader>Editar Tarea</ModalHeader>
+            <ModalBody>
+              <VStack spacing={4}>
+                <FormControl isRequired>
+                  <FormLabel>Tipo de tarea (evolución)</FormLabel>
+                  <Select
+                    value={formEditar.tipo}
+                    onChange={(e) => setFormEditar({...formEditar, tipo: e.target.value})}
+                  >
+                    <option value="llamada">📞 Llamada</option>
+                    <option value="cita">📅 Cita</option>
+                    <option value="evento">🎪 Evento</option>
+                    <option value="entrevista">🎤 Entrevista</option>
+                    <option value="contrato">📝 Contrato</option>
+                    <option value="seguimiento">🔄 Seguimiento</option>
+                  </Select>
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel>Título</FormLabel>
+                  <Input
+                    value={formEditar.titulo}
+                    onChange={(e) => setFormEditar({...formEditar, titulo: e.target.value})}
+                    placeholder="Título de la tarea"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Descripción / Comentarios</FormLabel>
+                  <Textarea
+                    value={formEditar.descripcion}
+                    onChange={(e) => setFormEditar({...formEditar, descripcion: e.target.value})}
+                    placeholder="Descripción o comentarios"
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel>Fecha</FormLabel>
+                  <Input
+                    type="date"
+                    value={formEditar.fecha}
+                    onChange={(e) => setFormEditar({...formEditar, fecha: e.target.value})}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Hora</FormLabel>
+                  <Input
+                    type="time"
+                    value={formEditar.hora}
+                    onChange={(e) => setFormEditar({...formEditar, hora: e.target.value})}
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Ubicación</FormLabel>
+                  <Input
+                    value={formEditar.ubicacion}
+                    onChange={(e) => setFormEditar({...formEditar, ubicacion: e.target.value})}
+                    placeholder="Dirección o lugar"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel>Estado</FormLabel>
+                  <Select
+                    value={formEditar.estado}
+                    onChange={(e) => setFormEditar({...formEditar, estado: e.target.value})}
+                  >
+                    <option value="pendiente">⏳ Pendiente</option>
+                    <option value="cancelada">❌ Cancelada</option>
+                  </Select>
+                </FormControl>
+              </VStack>
+            </ModalBody>
+            <ModalFooter>
+              <Button type="submit" colorScheme="orange" mr={3}>
+                Guardar Cambios
+              </Button>
+              <Button variant="ghost" onClick={onCloseEditar}>
+                Cancelar
+              </Button>
+            </ModalFooter>
+          </form>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }
