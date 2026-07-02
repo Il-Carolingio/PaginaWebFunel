@@ -8,6 +8,8 @@ import { useAuth } from '../context/AuthContext';
 
 function Crm() {
   const [tareas, setTareas] = useState([]);
+  const [tareasFiltradas, setTareasFiltradas] = useState([]);
+  const [filtroEstado, setFiltroEstado] = useState('todas');
   const [cargando, setCargando] = useState(true);
   const { usuario, login, logout, actualizarUsuario } = useAuth();
   const toast = useToast();
@@ -57,6 +59,14 @@ function Crm() {
       cargarTareas();
     }
   }, [usuario]);
+
+  useEffect(() => {
+    if (filtroEstado === 'todas') {
+      setTareasFiltradas(tareas);
+    } else {
+      setTareasFiltradas(tareas.filter(t => t.estado === filtroEstado));
+    }
+  }, [tareas, filtroEstado]);
 
   // Cargar datos del usuario en el formulario cuando se activa el modo edición
   useEffect(() => {
@@ -509,19 +519,19 @@ function Crm() {
 
         {/* Estadísticas */}
         <HStack spacing={4} mb={8} flexWrap="wrap">
-          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md">
+          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md" cursor="pointer" onClick={() => setFiltroEstado('pendiente')}>
             <Text color="gray.600" fontSize="sm" mb={1}>Pendientes</Text>
             <Heading as="h2" size="2xl" color="orange.500">{tareasPendientes.length}</Heading>
           </Box>
-          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md">
+          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md" cursor="pointer" onClick={() => setFiltroEstado('completada')}>
             <Text color="gray.600" fontSize="sm" mb={1}>Completadas</Text>
             <Heading as="h2" size="2xl" color="green.500">{tareasCompletadas.length}</Heading>
           </Box>
-          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md">
+          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md" cursor="pointer" onClick={() => setFiltroEstado('cancelada')}>
             <Text color="gray.600" fontSize="sm" mb={1}>Canceladas</Text>
             <Heading as="h2" size="2xl" color="red.500">{tareasCanceladas.length}</Heading>
           </Box>
-          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md">
+          <Box flex="1" minW="200px" bg="white" p={6} borderRadius="xl" boxShadow="md" cursor="pointer" onClick={() => setFiltroEstado('todas')}>
             <Text color="gray.600" fontSize="sm" mb={1}>Total</Text>
             <Heading as="h2" size="2xl" color="blue.500">{tareas.length}</Heading>
           </Box>
@@ -551,12 +561,12 @@ function Crm() {
                 <Text>Cargando...</Text>
               ) : (
                 <VStack spacing={4} align="stretch">
-                  {tareas.length === 0 ? (
+                  {tareasFiltradas.length === 0 ? (
                     <Box bg="white" p={8} borderRadius="xl" textAlign="center">
                       <Text color="gray.500">No tienes tareas aún. Crea tu primera tarea.</Text>
                     </Box>
                   ) : (
-                    tareas.map(tarea => (
+                    tareasFiltradas.map(tarea => (
                       <Box key={tarea._id} bg="white" p={6} borderRadius="xl" boxShadow="md">
                         <HStack justify="space-between" align="start">
                           <VStack align="start" spacing={2} flex="1">
