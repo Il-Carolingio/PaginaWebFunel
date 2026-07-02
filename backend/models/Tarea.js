@@ -5,7 +5,7 @@ const tareaSchema = new mongoose.Schema({
     type: String,
     required: [true, 'El tipo de tarea es requerido'],
     enum: {
-      values: ['cita', 'llamada', 'seguimiento', 'evento'],
+      values: ['cita', 'llamada', 'seguimiento', 'evento', 'entrevista', 'contrato'],
       message: 'Tipo no válido'
     }
   },

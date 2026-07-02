@@ -16,15 +16,15 @@ function App() {
         <Box minH="100vh" bg="gray.50">
           <Navbar />
           <Box pt="100px">
-          <Container maxW="container.xl" py={6}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/rifa" element={<Funnel />} />
-              <Route path="/catalogo" element={<Catalogo />} />
-              <Route path="/reclutamiento" element={<Reclutamiento />} />
-              <Route path="/crm" element={<Crm />} />
-            </Routes>
-          </Container>
+            <Container maxW="container.xl" py={6}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/rifa" element={<Funnel />} />
+                <Route path="/catalogo" element={<Catalogo />} />
+                <Route path="/reclutamiento" element={<Reclutamiento />} />
+                <Route path="/crm" element={<Crm />} />
+              </Routes>
+            </Container>
           </Box>
         </Box>
       </Router>
