@@ -23,16 +23,21 @@ export const crearTarea = async (req, res) => {
   try {
     const { tipo, titulo, descripcion, fecha, hora, prospectoId, ubicacion } = req.body;
 
-    const tarea = new Tarea({
+    const payload = {
       tipo,
       titulo,
       descripcion,
       fecha,
       hora,
-      prospectoId,
       ubicacion,
       vendedorId: req.usuario._id
-    });
+    };
+
+    if (prospectoId && String(prospectoId).trim() !== '') {
+      payload.prospectoId = String(prospectoId).trim();
+    }
+
+    const tarea = new Tarea(payload);
 
     const tareaGuardada = await tarea.save();
 
