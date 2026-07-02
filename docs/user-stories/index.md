@@ -17,6 +17,7 @@
 | HU-011 | Editar Perfil de Usuario | ✅ Completada | Alta | 5 |
 | HU-012 | Cambiar Contraseña de Usuario | ✅ Completada | Alta | 5 |
 | HU-013 | Evolucionar y administrar tareas de vendedor | ✅ Completada | Alta | 4 |
+| HU-014 | Filtrar listado de tareas por estado | ✅ Completada | Alta | 4 |
 
 ## Leyenda
 
