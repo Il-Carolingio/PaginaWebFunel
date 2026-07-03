@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container, Progress, Alert, AlertIcon } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container, Progress, Alert, AlertIcon, AlertDescription, Divider } from '@chakra-ui/react';
 import { AddIcon, EditIcon, CheckIcon } from '@chakra-ui/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -36,6 +36,10 @@ function Crm() {
     ubicacion: '',
     estado: 'pendiente'
   });
+
+  // Estado para conflictos de horario en citas
+  const [conflictoCita, setConflictoCita] = useState(null);
+  const [conflictoCitaEditar, setConflictoCitaEditar] = useState(null);
 
   const [formLogin, setFormLogin] = useState({
     email: '',
@@ -154,6 +158,7 @@ function Crm() {
 
   const handleSubmitTarea = async (e) => {
     e.preventDefault();
+    setConflictoCita(null);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('http://localhost:5000/api/tareas', {
@@ -183,6 +188,15 @@ function Crm() {
           ubicacion: ''
         });
         cargarTareas();
+      } else if (res.status === 409 && data.conflicto) {
+        // Mostrar alerta de conflicto de horario
+        setConflictoCita(data.conflicto);
+      } else {
+        toast({
+          title: data.message || 'Error al crear tarea',
+          status: 'error',
+          duration: 5000
+        });
       }
     } catch (error) {
       toast({
@@ -210,6 +224,7 @@ function Crm() {
 
   const handleGuardarEdicion = async (e) => {
     e.preventDefault();
+    setConflictoCitaEditar(null);
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5000/api/tareas/${formEditar._id}`, {
@@ -238,6 +253,9 @@ function Crm() {
         });
         onCloseEditar();
         cargarTareas();
+      } else if (res.status === 409 && data.conflicto) {
+        // Mostrar alerta de conflicto de horario
+        setConflictoCitaEditar(data.conflicto);
       } else {
         toast({
           title: data.message || 'Error al actualizar tarea',
@@ -859,13 +877,32 @@ function Crm() {
       </Box>
 
       {/* Modal de Crear Tarea */}
-      <Modal isOpen={isOpenCrear} onClose={onCloseCrear} size="lg">
+      <Modal isOpen={isOpenCrear} onClose={() => { setConflictoCita(null); onCloseCrear(); }} size="lg">
         <ModalOverlay />
         <ModalContent>
           <form onSubmit={handleSubmitTarea}>
             <ModalHeader>Nueva Tarea</ModalHeader>
             <ModalBody>
               <VStack spacing={4}>
+                {conflictoCita && (
+                  <Alert status="warning" borderRadius="md" flexDirection="column" alignItems="flex-start">
+                    <HStack>
+                      <AlertIcon />
+                      <Text fontWeight="bold">⚠️ Conflicto de horario</Text>
+                    </HStack>
+                    <AlertDescription mt={2}>
+                      <Text>Ya tienes una cita agendada en esta fecha y hora:</Text>
+                      <Box mt={2} p={3} bg="white" borderRadius="md" borderWidth="1px" borderColor="orange.200">
+                        <Text><strong>Título:</strong> {conflictoCita.titulo}</Text>
+                        <Text><strong>Fecha:</strong> {new Date(conflictoCita.fecha).toLocaleDateString('es-MX')}</Text>
+                        <Text><strong>Hora:</strong> {conflictoCita.hora}</Text>
+                        {conflictoCita.ubicacion && <Text><strong>Ubicación:</strong> {conflictoCita.ubicacion}</Text>}
+                      </Box>
+                      <Text mt={2} fontSize="sm" color="gray.600">Por favor, elige otra fecha u horario.</Text>
+                    </AlertDescription>
+                    <Divider my={2} />
+                  </Alert>
+                )}
                 <FormControl isRequired>
                   <FormLabel>Tipo de tarea</FormLabel>
                   <Select
@@ -947,6 +984,25 @@ function Crm() {
             <ModalHeader>Editar Tarea</ModalHeader>
             <ModalBody>
               <VStack spacing={4}>
+                {conflictoCitaEditar && (
+                  <Alert status="warning" borderRadius="md" flexDirection="column" alignItems="flex-start">
+                    <HStack>
+                      <AlertIcon />
+                      <Text fontWeight="bold">⚠️ Conflicto de horario</Text>
+                    </HStack>
+                    <AlertDescription mt={2}>
+                      <Text>Ya tienes una cita agendada en esta fecha y hora:</Text>
+                      <Box mt={2} p={3} bg="white" borderRadius="md" borderWidth="1px" borderColor="orange.200">
+                        <Text><strong>Título:</strong> {conflictoCitaEditar.titulo}</Text>
+                        <Text><strong>Fecha:</strong> {new Date(conflictoCitaEditar.fecha).toLocaleDateString('es-MX')}</Text>
+                        <Text><strong>Hora:</strong> {conflictoCitaEditar.hora}</Text>
+                        {conflictoCitaEditar.ubicacion && <Text><strong>Ubicación:</strong> {conflictoCitaEditar.ubicacion}</Text>}
+                      </Box>
+                      <Text mt={2} fontSize="sm" color="gray.600">Por favor, elige otra fecha u horario.</Text>
+                    </AlertDescription>
+                    <Divider my={2} />
+                  </Alert>
+                )}
                 <FormControl isRequired>
                   <FormLabel>Tipo de tarea (evolución)</FormLabel>
                   <Select
