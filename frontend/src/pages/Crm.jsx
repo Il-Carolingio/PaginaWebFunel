@@ -207,8 +207,24 @@ function Crm() {
     }
   };
 
+  // Función para formatear fecha ISO a YYYY-MM-DD sin desplazamiento UTC
+  const formatLocalDate = (isoDate) => {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDateDisplay = (isoDate) => {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    return d.toLocaleDateString('es-MX', { timeZone: 'UTC' });
+  };
+
   const handleEditarTarea = (tarea) => {
-    const fechaLocal = new Date(tarea.fecha).toISOString().split('T')[0];
+    const fechaLocal = formatLocalDate(tarea.fecha);
     setFormEditar({
       _id: tarea._id,
       tipo: tarea.tipo,
@@ -638,12 +654,12 @@ function Crm() {
                               <Text color="gray.600" fontSize="sm">{tarea.descripcion}</Text>
                             )}
                             <Text fontSize="sm" color="gray.500">
-                              📅 {new Date(tarea.fecha).toLocaleDateString('es-MX')}
+                              📅 {formatDateDisplay(tarea.fecha)}
                               {tarea.hora && ` - 🕐 ${tarea.hora}`}
                             </Text>
                             {tarea.fechaCompletado && (
                               <Text fontSize="sm" color="green.600">
-                                ✅ Completada el {new Date(tarea.fechaCompletado).toLocaleDateString('es-MX')}
+                                ✅ Completada el {formatDateDisplay(tarea.fechaCompletado)}
                               </Text>
                             )}
                             {tarea.prospectoId && (
@@ -894,7 +910,7 @@ function Crm() {
                       <Text>Ya tienes una cita agendada en esta fecha y hora:</Text>
                       <Box mt={2} p={3} bg="white" borderRadius="md" borderWidth="1px" borderColor="orange.200">
                         <Text><strong>Título:</strong> {conflictoCita.titulo}</Text>
-                        <Text><strong>Fecha:</strong> {new Date(conflictoCita.fecha).toLocaleDateString('es-MX')}</Text>
+                        <Text><strong>Fecha:</strong> {formatDateDisplay(conflictoCita.fecha)}</Text>
                         <Text><strong>Hora:</strong> {conflictoCita.hora}</Text>
                         {conflictoCita.ubicacion && <Text><strong>Ubicación:</strong> {conflictoCita.ubicacion}</Text>}
                       </Box>
