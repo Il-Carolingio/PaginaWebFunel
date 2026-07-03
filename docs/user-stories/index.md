@@ -19,6 +19,7 @@
 | HU-013 | Evolucionar y administrar tareas de vendedor | ✅ Completada | Alta | 4 |
 | HU-014 | Filtrar listado de tareas por estado | ✅ Completada | Alta | 4 |
 | HU-015 | Cambiar estado de tarea a completada | ✅ Completada | Alta | 4 |
+| HU-016 | Detección de conflictos de horario en citas | ✅ Completada | Alta | 5 |
 
 ## Leyenda
 
