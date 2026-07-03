@@ -23,6 +23,35 @@ export const crearTarea = async (req, res) => {
   try {
     const { tipo, titulo, descripcion, fecha, hora, prospectoId, ubicacion } = req.body;
 
+    // Validar conflicto de horario si es una cita con hora
+    if (tipo === 'cita' && hora && fecha) {
+      const fechaInicio = new Date(fecha);
+      fechaInicio.setHours(0, 0, 0, 0);
+      const fechaFin = new Date(fecha);
+      fechaFin.setHours(23, 59, 59, 999);
+
+      const citaExistente = await Tarea.findOne({
+        vendedorId: req.usuario._id,
+        tipo: 'cita',
+        hora: hora,
+        fecha: { $gte: fechaInicio, $lte: fechaFin },
+        estado: { $ne: 'cancelada' }
+      }).select('titulo fecha hora ubicacion');
+
+      if (citaExistente) {
+        return res.status(409).json({
+          success: false,
+          message: 'Ya tienes una cita agendada en esta fecha y hora',
+          conflicto: {
+            titulo: citaExistente.titulo,
+            fecha: citaExistente.fecha,
+            hora: citaExistente.hora,
+            ubicacion: citaExistente.ubicacion
+          }
+        });
+      }
+    }
+
     const payload = {
       tipo,
       titulo,
@@ -58,6 +87,36 @@ export const actualizarTarea = async (req, res) => {
   try {
     const { id } = req.params;
     const { tipo, titulo, descripcion, fecha, hora, ubicacion, estado } = req.body;
+
+    // Validar conflicto de horario si se actualiza a una cita con hora
+    if (tipo === 'cita' && hora && fecha) {
+      const fechaInicio = new Date(fecha);
+      fechaInicio.setHours(0, 0, 0, 0);
+      const fechaFin = new Date(fecha);
+      fechaFin.setHours(23, 59, 59, 999);
+
+      const citaExistente = await Tarea.findOne({
+        vendedorId: req.usuario._id,
+        tipo: 'cita',
+        hora: hora,
+        fecha: { $gte: fechaInicio, $lte: fechaFin },
+        estado: { $ne: 'cancelada' },
+        _id: { $ne: id } // Excluir la tarea que se está editando
+      }).select('titulo fecha hora ubicacion');
+
+      if (citaExistente) {
+        return res.status(409).json({
+          success: false,
+          message: 'Ya tienes una cita agendada en esta fecha y hora',
+          conflicto: {
+            titulo: citaExistente.titulo,
+            fecha: citaExistente.fecha,
+            hora: citaExistente.hora,
+            ubicacion: citaExistente.ubicacion
+          }
+        });
+      }
+    }
 
     // Preparar el payload de actualización
     const updateData = { tipo, titulo, descripcion, fecha, hora, ubicacion, estado };
