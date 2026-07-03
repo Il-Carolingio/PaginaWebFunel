@@ -59,10 +59,21 @@ export const actualizarTarea = async (req, res) => {
     const { id } = req.params;
     const { tipo, titulo, descripcion, fecha, hora, ubicacion, estado } = req.body;
 
+    // Preparar el payload de actualización
+    const updateData = { tipo, titulo, descripcion, fecha, hora, ubicacion, estado };
+    
+    // Si el estado cambia a 'completada', registrar la fecha
+    if (estado === 'completada') {
+      updateData.fechaCompletado = new Date();
+    } else if (estado === 'pendiente' || estado === 'cancelada') {
+      // Si cambia de completada a otro estado, limpiar la fecha
+      updateData.fechaCompletado = null;
+    }
+
     const tarea = await Tarea.findOneAndUpdate(
       { _id: id, vendedorId: req.usuario._id },
-      { tipo, titulo, descripcion, fecha, hora, ubicacion, estado },
-      { new: true, runValidators: true }
+      updateData,
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!tarea) {
@@ -81,6 +92,57 @@ export const actualizarTarea = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || 'Error al actualizar la tarea'
+    });
+  }
+};
+
+export const cambiarEstadoTarea = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { estado } = req.body;
+
+    // Validar que el estado sea válido
+    if (!['pendiente', 'completada', 'cancelada'].includes(estado)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Estado no válido'
+      });
+    }
+
+    // Preparar datos de actualización
+    const updateData = { estado };
+    
+    // Si el estado cambia a 'completada', registrar la fecha
+    if (estado === 'completada') {
+      updateData.fechaCompletado = new Date();
+    } else {
+      // Si cambia de completada a otro estado, limpiar la fecha
+      updateData.fechaCompletado = null;
+    }
+
+    const tarea = await Tarea.findOneAndUpdate(
+      { _id: id, vendedorId: req.usuario._id },
+      updateData,
+      { returnDocument: 'after', runValidators: true }
+    );
+
+    if (!tarea) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tarea no encontrada'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: tarea,
+      message: `Tarea marcada como ${estado}`
+    });
+  } catch (error) {
+    console.error('Error al cambiar estado de tarea:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error al cambiar el estado de la tarea'
     });
   }
 };

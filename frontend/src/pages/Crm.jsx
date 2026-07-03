@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container, Progress, Alert, AlertIcon } from '@chakra-ui/react';
-import { AddIcon, EditIcon } from '@chakra-ui/icons';
+import { AddIcon, EditIcon, CheckIcon } from '@chakra-ui/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -248,6 +248,42 @@ function Crm() {
     } catch (error) {
       toast({
         title: 'Error al actualizar tarea',
+        status: 'error',
+        duration: 3000
+      });
+    }
+  };
+
+  const handleCambiarEstado = async (tareaId, nuevoEstado) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/tareas/${tareaId}/estado`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ estado: nuevoEstado })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast({
+          title: `Tarea ${nuevoEstado === 'completada' ? 'completada' : nuevoEstado === 'cancelada' ? 'cancelada' : 'actualizada'}`,
+          status: 'success',
+          duration: 3000
+        });
+        cargarTareas();
+      } else {
+        toast({
+          title: data.message || 'Error al cambiar estado',
+          status: 'error',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error al cambiar estado',
         status: 'error',
         duration: 3000
       });
@@ -587,21 +623,39 @@ function Crm() {
                               📅 {new Date(tarea.fecha).toLocaleDateString('es-MX')}
                               {tarea.hora && ` - 🕐 ${tarea.hora}`}
                             </Text>
+                            {tarea.fechaCompletado && (
+                              <Text fontSize="sm" color="green.600">
+                                ✅ Completada el {new Date(tarea.fechaCompletado).toLocaleDateString('es-MX')}
+                              </Text>
+                            )}
                             {tarea.prospectoId && (
                               <Text fontSize="sm" color="blue.600">
                                 👤 {tarea.prospectoId.nombre} - {tarea.prospectoId.telefono}
                               </Text>
                             )}
                           </VStack>
-                          <Button
-                            colorScheme="orange"
-                            variant="ghost"
-                            size="sm"
-                            leftIcon={<EditIcon />}
-                            onClick={() => handleEditarTarea(tarea)}
-                          >
-                            Editar
-                          </Button>
+                          <VStack spacing={2}>
+                            {tarea.estado === 'pendiente' && (
+                              <Button
+                                colorScheme="green"
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<CheckIcon />}
+                                onClick={() => handleCambiarEstado(tarea._id, 'completada')}
+                              >
+                                Completar
+                              </Button>
+                            )}
+                            <Button
+                              colorScheme="orange"
+                              variant="ghost"
+                              size="sm"
+                              leftIcon={<EditIcon />}
+                              onClick={() => handleEditarTarea(tarea)}
+                            >
+                              Editar
+                            </Button>
+                          </VStack>
                         </HStack>
                       </Box>
                     ))
@@ -960,6 +1014,7 @@ function Crm() {
                     onChange={(e) => setFormEditar({...formEditar, estado: e.target.value})}
                   >
                     <option value="pendiente">⏳ Pendiente</option>
+                    <option value="completada">✅ Completada</option>
                     <option value="cancelada">❌ Cancelada</option>
                   </Select>
                 </FormControl>

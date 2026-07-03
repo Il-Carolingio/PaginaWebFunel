@@ -31,6 +31,10 @@ const tareaSchema = new mongoose.Schema({
     enum: ['pendiente', 'completada', 'cancelada'],
     default: 'pendiente'
   },
+  fechaCompletado: {
+    type: Date,
+    default: null
+  },
   vendedorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Usuario',
