@@ -1,6 +1,6 @@
 # HU-018: Guardar tarea de reclutamiento con fecha y hora
 
-**Estado:** ✅ Aprobada - En implementación
+**Estado:** ✅ Completada
 **Prioridad:** Alta
 **Sprint:** 4
 **Esfuerzo estimado:** 3 horas
@@ -20,12 +20,12 @@
 
 ## Criterios de Aceptación
 
-- [ ] El administrador puede ver tareas de reclutamiento sin fecha/hora asignados
-- [ ] El administrador puede editar la tarea para agregar fecha y hora
-- [ ] Al guardar la tarea, se actualiza en la base de datos
-- [ ] La tarea se asigna correctamente al administrador
-- [ ] No aparece el mensaje "la tarea no existe"
-- [ ] Interfaz responsive y consistente con el diseño existente
+- [x] El administrador puede ver tareas de reclutamiento sin fecha/hora asignados
+- [x] El administrador puede editar la tarea para agregar fecha y hora
+- [x] Al guardar la tarea, se actualiza en la base de datos
+- [x] La tarea se asigna correctamente al administrador
+- [x] No aparece el mensaje "la tarea no existe"
+- [x] Interfaz responsive y consistente con el diseño existente
 
 ---
 
@@ -61,4 +61,4 @@
 ## Pull Request
 
 - **URL:** https://github.com/Il-Carolingio/PaginaWebFunel/pull/3
-- **Estado:** Abierto, pendiente de revisión
+- **Estado:** ✅ Mergeado a develop
