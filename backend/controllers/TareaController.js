@@ -129,8 +129,14 @@ export const actualizarTarea = async (req, res) => {
       updateData.fechaCompletado = null;
     }
 
+    // Para tareas de reclutamiento (vendedorId: null), permitir actualización a administradores
+    const query = { _id: id };
+    if (req.usuario.rol !== 'admin') {
+      query.vendedorId = req.usuario._id;
+    }
+    
     const tarea = await Tarea.findOneAndUpdate(
-      { _id: id, vendedorId: req.usuario._id },
+      query,
       updateData,
       { returnDocument: 'after', runValidators: true }
     );
@@ -179,8 +185,14 @@ export const cambiarEstadoTarea = async (req, res) => {
       updateData.fechaCompletado = null;
     }
 
+    // Para tareas de reclutamiento (vendedorId: null), permitir actualización a administradores
+    const query = { _id: id };
+    if (req.usuario.rol !== 'admin') {
+      query.vendedorId = req.usuario._id;
+    }
+    
     const tarea = await Tarea.findOneAndUpdate(
-      { _id: id, vendedorId: req.usuario._id },
+      query,
       updateData,
       { returnDocument: 'after', runValidators: true }
     );
