@@ -29,14 +29,15 @@ El catálogo no se muestra correctamente. Al navegar a `/catalogo`, se muestra u
 ## Solución Aplicada
 - Crear directorio `frontend/public/catalogo/`
 - Agregar PDF de ejemplo del catálogo
-- Agregar botón de descarga del PDF
+- Agregar botón de descarga del PDF (removido - el visor de PDF ya tiene botón de guardar)
 - Simplificar URL del iframe (remover parámetros que podrían causar problemas)
+- Agregar enlace desde Home.jsx a `/catalogo` en la imagen "CocinaProfesional"
 
 ## Estado
 - **Rama:** bugfix/HU-009-catalogo-pdf
-- **Commit:** 2429bab
+- **Commit:** da00ca9
 - **Pull Request:** https://github.com/Il-Carolingio/PaginaWebFunel/pull/2
 - **Estado PR:** Abierto, pendiente de revisión
 
 ## Solución aplicada
-✅ Corregido - PDF creado y botón de descarga agregado
+✅ Corregido - PDF creado, enlace desde Home.jsx a /catalogo agregado
