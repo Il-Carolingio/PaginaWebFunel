@@ -4,7 +4,7 @@
 - **Fecha:** 2026-07-04
 - **Reportado por:** Usuario
 - **Severidad:** Alta
-- **Estado:** Resuelto - PR creado
+- **Estado:** ✅ Completado - Mergeado a develop
 
 ## Descripción
 Al intentar registrarse en "Únete al equipo", el formulario muestra error de conexión. No se puede enviar el registro.

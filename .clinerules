@@ -1,0 +1,39 @@
+# ⚠️ INSTRUCCIONES OBLIGATORIAS PARA CLINE
+
+## 🧠 Sistema Agentic Brain
+
+**ANTES DE CUALQUIER ACCIÓN**, leer obligatoriamente estos archivos en orden:
+
+1. **agentic-brain/agentic.md** - Filosofía y reglas del sistema
+2. **agentic-brain/_current/next-task.md** - Tarea actual en progreso
+3. **agentic-brain/projects/PaginaWebFunel/context.md** - Contexto completo del proyecto
+
+## 📋 Reglas de Oro
+
+- ❌ **NO hacer nada** hasta haber leído los archivos anteriores
+- ✅ **SIEMPRE** seguir el flujo definido en agentic.md
+- ✅ **SIEMPRE** actualizar el contexto después de cada operación
+- ✅ **SIEMPRE** pushear a GitHub al finalizar
+- ✅ **SIEMPRE** verificar con el humano antes de mergear a develop
+- ✅ **SIEMPRE** leer el documento de evaluación de la HU antes de implementar para detectar cambios
+
+## 🔄 Flujo de Trabajo
+
+```
+1. Leer archivos de contexto (arriba)
+2. Identificar tipo de tarea (sprint/bugfix/hotfix)
+3. Seguir flujo correspondiente
+4. Actualizar contexto del proyecto
+5. Push a GitHub
+```
+
+## ⚙️ Configuración
+
+- **Ruta del cerebro:** `agentic-brain/` (en la raíz del proyecto)
+- **Proyecto activo:** Ver en `_current/project.link`
+- **Comandos disponibles:** Ver `agentic-brain/commands/`
+
+## 📝 Nota
+
+Este archivo es generado automáticamente por el sistema agentic brain.
+No editar manualmente. Para modificar, editar la plantilla en `agentic-brain/templates/clinerules.md`.
