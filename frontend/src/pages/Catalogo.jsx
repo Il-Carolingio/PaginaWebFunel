@@ -1,5 +1,6 @@
 // frontend/src/pages/Catalogo.jsx
-import { Box, Heading, Text, VStack } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, Button, Icon } from '@chakra-ui/react';
+import { MdDownload } from 'react-icons/md';
 import multipan from '../assets/images/multiPan.png';
 
 const PDF_URL = '/catalogo/Novel Catalog_DIGITAL.pdf';
@@ -61,13 +62,26 @@ function Catalogo() {
               boxShadow="md"
             >
               <iframe
-                src={`${PDF_URL}#view=FitH&toolbar=1`}
+                src={PDF_URL}
                 title="Catálogo Royal Prestige"
                 width="100%"
                 height="100%"
                 style={{ border: 'none' }}
               />
             </Box>
+
+            {/* Botón de descarga */}
+            <Button
+              as="a"
+              href={PDF_URL}
+              download="Catalogo_Royal_Prestige.pdf"
+              colorScheme="blue"
+              size="lg"
+              leftIcon={<Icon as={MdDownload} />}
+              alignSelf="center"
+            >
+              Descargar Catálogo PDF
+            </Button>
 
             {/* Pie */}
             <Text fontSize="sm" color="gray.500" textAlign="center">
