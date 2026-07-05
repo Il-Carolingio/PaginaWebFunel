@@ -39,10 +39,13 @@ Al intentar registrarse en "Únete al equipo", el formulario muestra error de co
 - **Frontend:** `api.post('/reclutamiento/registro', data)` → `api.post('/api/reclutamiento/registro', data)`
 - **Servicio:** Agregado `/api` a todos los endpoints en reclutamientoService.js
 - **Navbar.jsx:** Corregido error `_hoverAfter` (prop no válido de Chakra UI)
+- **ReclutamientoController:** Implementada creación automática de tareas en colección `tareas`
+- **Tarea.js:** Hecho opcional `fecha`, `hora` y `vendedorId`
+- **reclutamiento.js:** Corregido orden de rutas
 
 ## Estado
 - **Rama:** bugfix/HU-017-error-conexion-reclutamiento
-- **Último Commit:** 86b0873
+- **Último Commit:** 18a7524
 - **Pull Request:** https://github.com/Il-Carolingio/PaginaWebFunel/pull/1
 
 ## Hipótesis
