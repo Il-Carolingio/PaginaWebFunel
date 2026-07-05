@@ -35,6 +35,17 @@ Al intentar registrarse en "Únete al equipo", el formulario muestra error de co
 - **Puerto incorrecto:** El backend corre en puerto 5000, no 3000
 - **Resultado:** 404 Not Found porque no existe el endpoint en ese puerto
 
+## Solución Aplicada
+- Cambiar `fetch('/api/reclutamiento/registro')` por `api.post('/reclutamiento/registro', data)`
+- Ahora usa la configuración correcta de API (puerto 5000)
+- Corregir manejo de errores para mostrar mensajes del backend
+
+## Estado
+- **Rama:** bugfix/HU-017-error-conexion-reclutamiento
+- **Commit:** f851906
+- **Pull Request:** Pendiente de crear (requiere acción manual)
+- **URL para crear PR:** https://github.com/Il-Carolingio/PaginaWebFunel/pull/new/bugfix/HU-017-error-conexion-reclutamiento
+
 ## Hipótesis
 1. El archivo de configuración de API tiene el puerto incorrecto (3000 en lugar de 5000)
 2. El servicio de reclutamiento en el frontend usa la URL base incorrecta
@@ -44,5 +55,5 @@ Al intentar registrarse en "Únete al equipo", el formulario muestra error de co
 - `frontend/src/pages/Reclutamiento.jsx` - Llamada al endpoint
 - `backend/server.js` - Verificar puerto del servidor
 
-## Solución propuesta
-Corregir la configuración de la URL base en el frontend para apuntar al puerto correcto (5000).
+## Solución aplicada
+✅ Corregido - Cambiar fetch por api.post en Reclutamiento.jsx

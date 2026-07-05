@@ -136,6 +136,78 @@ export const actualizarStatus = async (req, res) => {
   }
 };
 
+// Obtener registros como tareas de llamada (para HU-017)
+export const obtenerTareasLlamada = async (req, res) => {
+  try {
+    // Obtener todos los registros de reclutamiento
+    const registros = await Reclutamiento.find()
+      .sort({ fechaRegistro: -1 })
+      .select('-__v');
+
+    // Transformar registros a formato de tareas
+    const tareas = registros.map(registro => ({
+      _id: registro._id,
+      tipo: 'reclutamiento',
+      titulo: `Llamar a ${registro.nombre}`,
+      descripcion: `Seguimiento de candidato a equipo de ventas`,
+      nombre: registro.nombre,
+      telefono: registro.telefono,
+      email: registro.email,
+      experiencia: registro.experiencia,
+      disponibilidad: registro.disponibilidad,
+      motivacion: registro.motivacion,
+      status: registro.status === 'pendiente' ? 'pendiente' : 
+              registro.status === 'contratado' ? 'completada' : 'cancelada',
+      estadoOriginal: registro.status,
+      fechaRegistro: registro.fechaRegistro,
+      fechaCreacion: registro.fechaRegistro,
+      tareaGenerada: registro.tareaGenerada
+    }));
+
+    res.status(200).json({
+      message: 'Tareas de llamada obtenidas exitosamente',
+      data: tareas,
+      total: tareas.length
+    });
+  } catch (error) {
+    console.error('Error al obtener tareas de llamada:', error);
+    res.status(500).json({
+      message: 'Error al obtener tareas de llamada',
+      error: error.message
+    });
+  }
+};
+
+// Marcar registro como tarea generada
+export const marcarTareaGenerada = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const registro = await Reclutamiento.findByIdAndUpdate(
+      id,
+      { tareaGenerada: true },
+      { new: true, select: '-__v' }
+    );
+
+    if (!registro) {
+      return res.status(404).json({
+        message: 'Registro no encontrado'
+      });
+    }
+
+    res.status(200).json({
+      message: 'Registro marcado como tarea generada',
+      data: registro
+    });
+  } catch (error) {
+    console.error('Error al marcar tarea generada:', error);
+    res.status(500).json({
+      message: 'Error al marcar tarea generada',
+      error: error.message
+    });
+  }
+};
+
 // Eliminar registro
 export const eliminar = async (req, res) => {
   try {
