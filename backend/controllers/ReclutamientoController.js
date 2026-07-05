@@ -1,4 +1,5 @@
 import Reclutamiento from '../models/Reclutamiento.js';
+import Tarea from '../models/Tarea.js';
 
 // Registrar nuevo candidato
 export const registrar = async (req, res) => {
@@ -31,6 +32,24 @@ export const registrar = async (req, res) => {
       status: 'pendiente' // Estado inicial
     });
 
+    await nuevoRegistro.save();
+
+    // Crear tarea automática en la colección tareas (HU-017)
+    // Nota: vendedorId es null porque es una tarea de reclutamiento general
+    const nuevaTarea = new Tarea({
+      tipo: 'llamada',
+      titulo: 'Reclutamiento',
+      descripcion: `Nombre: ${nombre}\nTeléfono: ${telefono}\nEmail: ${email}\nExperiencia: ${experiencia}\nDisponibilidad: ${disponibilidad}`,
+      fecha: null, // Sin fecha - se asignará después
+      hora: null, // Sin hora - se asignará después
+      estado: 'pendiente',
+      vendedorId: null // Tarea general, no asignada a vendedor específico
+    });
+
+    await nuevaTarea.save();
+
+    // Marcar el registro como tarea generada
+    nuevoRegistro.tareaGenerada = true;
     await nuevoRegistro.save();
 
     res.status(201).json({
@@ -136,43 +155,25 @@ export const actualizarStatus = async (req, res) => {
   }
 };
 
-// Obtener registros como tareas de llamada (para HU-017)
+// Obtener tareas de reclutamiento (para HU-017)
 export const obtenerTareasLlamada = async (req, res) => {
   try {
-    // Obtener todos los registros de reclutamiento
-    const registros = await Reclutamiento.find()
-      .sort({ fechaRegistro: -1 })
-      .select('-__v');
-
-    // Transformar registros a formato de tareas
-    const tareas = registros.map(registro => ({
-      _id: registro._id,
-      tipo: 'reclutamiento',
-      titulo: `Llamar a ${registro.nombre}`,
-      descripcion: `Seguimiento de candidato a equipo de ventas`,
-      nombre: registro.nombre,
-      telefono: registro.telefono,
-      email: registro.email,
-      experiencia: registro.experiencia,
-      disponibilidad: registro.disponibilidad,
-      motivacion: registro.motivacion,
-      status: registro.status === 'pendiente' ? 'pendiente' : 
-              (registro.status === 'contratado' ? 'completada' : 'cancelada'),
-      estadoOriginal: registro.status || 'pendiente',
-      fechaRegistro: registro.fechaRegistro,
-      fechaCreacion: registro.fechaRegistro,
-      tareaGenerada: registro.tareaGenerada || false
-    }));
+    // Obtener tareas con título "Reclutamiento" de la colección tareas
+    const tareas = await Tarea.find({ titulo: 'Reclutamiento' })
+      .sort({ createdAt: -1 })
+      .select('-__v')
+      .lean();
 
     res.status(200).json({
-      message: 'Tareas de llamada obtenidas exitosamente',
+      success: true,
+      message: 'Tareas de reclutamiento obtenidas exitosamente',
       data: tareas,
       total: tareas.length
     });
   } catch (error) {
-    console.error('Error al obtener tareas de llamada:', error);
+    console.error('Error al obtener tareas de reclutamiento:', error);
     res.status(500).json({
-      message: 'Error al obtener tareas de llamada',
+      message: 'Error al obtener tareas de reclutamiento',
       error: error.message
     });
   }

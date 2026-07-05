@@ -20,7 +20,7 @@ const tareaSchema = new mongoose.Schema({
   },
   fecha: {
     type: Date,
-    required: [true, 'La fecha es requerida']
+    default: null
   },
   hora: {
     type: String,
@@ -38,7 +38,7 @@ const tareaSchema = new mongoose.Schema({
   vendedorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Usuario',
-    required: [true, 'El vendedor es requerido']
+    default: null
   },
   prospectoId: {
     type: mongoose.Schema.Types.ObjectId,
