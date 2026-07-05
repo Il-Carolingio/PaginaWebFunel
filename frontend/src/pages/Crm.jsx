@@ -101,38 +101,22 @@ function Crm() {
     try {
       const token = localStorage.getItem('token');
       
-      // Cargar tareas propias
-      const resTareas = await fetch('http://localhost:5000/api/tareas', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const dataTareas = await resTareas.json();
-      
-      let todasLasTareas = [];
-      
-      if (dataTareas.success) {
-        // Marcar tareas propias
-        const tareasPropias = dataTareas.data.map(t => ({
-          ...t,
-          esPropia: true
-        }));
-        todasLasTareas = [...tareasPropias];
-      }
-      
-      // Cargar tareas de reclutamiento si el usuario es admin
-      if (usuario?.rol === 'admin') {
-        try {
-          const tareasReclutamiento = await obtenerTareasLlamada();
-          if (tareasReclutamiento.success) {
-            const tareasReclutamientoMarcadas = tareasReclutamiento.data.map(t => ({
-              ...t,
-              esPropia: false
-            }));
-            todasLasTareas = [...todasLasTareas, ...tareasReclutamientoMarcadas];
-          }
-        } catch (error) {
-          console.error('Error al cargar tareas de reclutamiento:', error);
-        }
-      }
+   // Cargar tareas (el backend ya devuelve todas para administradores)
+   const resTareas = await fetch('http://localhost:5000/api/tareas', {
+     headers: { 'Authorization': `Bearer ${token}` }
+   });
+   const dataTareas = await resTareas.json();
+   
+   let todasLasTareas = [];
+   
+   if (dataTareas.success) {
+     // Marcar tareas según el rol del usuario
+     const tareasMarcadas = dataTareas.data.map(t => ({
+       ...t,
+       esPropia: t.vendedorId ? true : false
+     }));
+     todasLasTareas = [...tareasMarcadas];
+   }
       
       // Ordenar: pendientes más antiguas primero, luego las de hoy, luego completadas
       const ordenadas = ordenarTareas(todasLasTareas);

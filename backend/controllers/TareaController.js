@@ -2,7 +2,12 @@ import Tarea from '../models/Tarea.js';
 
 export const listarTareas = async (req, res) => {
   try {
-    const tareas = await Tarea.find({ vendedorId: req.usuario._id })
+    // Los administradores pueden ver todas las tareas, incluyendo reclutamiento
+    const query = req.usuario.rol === 'admin' 
+      ? {} 
+      : { vendedorId: req.usuario._id };
+    
+    const tareas = await Tarea.find(query)
       .populate('prospectoId', 'nombre telefono')
       .sort({ fecha: -1 });
 
