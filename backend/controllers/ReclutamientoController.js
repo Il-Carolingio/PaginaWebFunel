@@ -158,10 +158,10 @@ export const obtenerTareasLlamada = async (req, res) => {
       motivacion: registro.motivacion,
       status: registro.status === 'pendiente' ? 'pendiente' : 
               registro.status === 'contratado' ? 'completada' : 'cancelada',
-      estadoOriginal: registro.status,
+      estadoOriginal: registro.status || 'pendiente',
       fechaRegistro: registro.fechaRegistro,
       fechaCreacion: registro.fechaRegistro,
-      tareaGenerada: registro.tareaGenerada
+      tareaGenerada: registro.tareaGenerada || false
     }));
 
     res.status(200).json({
