@@ -70,19 +70,6 @@ function Catalogo() {
               />
             </Box>
 
-            {/* Botón de descarga */}
-            <Button
-              as="a"
-              href={PDF_URL}
-              download="Catalogo_Royal_Prestige.pdf"
-              colorScheme="blue"
-              size="lg"
-              leftIcon={<Icon as={MdDownload} />}
-              alignSelf="center"
-            >
-              Descargar Catálogo PDF
-            </Button>
-
             {/* Pie */}
             <Text fontSize="sm" color="gray.500" textAlign="center">
               Catálogo digital Royal Prestige - Todos los derechos reservados

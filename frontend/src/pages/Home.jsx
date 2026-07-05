@@ -542,6 +542,7 @@ function Home() {
                 gap={10}
                 alignItems="center"
               >
+                <Box as={RouterLink} to="/catalogo" _hover={{ textDecoration: 'none' }}>
                 <Image
                   src="/homeImages/CocinaProfesional.png"
                   alt="Cocina profesional"
@@ -550,6 +551,7 @@ function Home() {
                   borderRadius="lg"
                   objectFit="cover"
                 />
+                </Box>
                 <VStack align="flex-start" spacing={6}>
                   <Heading as="h2" size="xl" color="orange.600">
                     ¿Por qué elegir Royal Prestige?
