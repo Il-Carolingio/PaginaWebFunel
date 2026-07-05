@@ -35,14 +35,15 @@ Al intentar registrarse en "Únete al equipo", el formulario muestra error de co
 - **Resultado:** 404 Not Found porque no existe el endpoint en ese puerto
 
 ## Solución Aplicada
-- Cambiar `fetch('/api/reclutamiento/registro')` por `api.post('/reclutamiento/registro', data)`
-- Ahora usa la configuración correcta de API (puerto 5000)
-- Corregir manejo de errores para mostrar mensajes del backend
+- **Problema raíz:** Las URLs en el frontend faltaban el prefijo `/api`
+- **Frontend:** `api.post('/reclutamiento/registro', data)` → `api.post('/api/reclutamiento/registro', data)`
+- **Servicio:** Agregado `/api` a todos los endpoints en reclutamientoService.js
+- **Navbar.jsx:** Corregido error `_hoverAfter` (prop no válido de Chakra UI)
 
 ## Estado
 - **Rama:** bugfix/HU-017-error-conexion-reclutamiento
-- **Commit:** 8aa5ef6
-- **Pull Request:** Creado - https://github.com/Il-Carolingio/PaginaWebFunel/pull/1
+- **Último Commit:** 48ac748
+- **Pull Request:** https://github.com/Il-Carolingio/PaginaWebFunel/pull/1
 
 ## Hipótesis
 1. El archivo de configuración de API tiene el puerto incorrecto (3000 en lugar de 5000)
