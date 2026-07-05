@@ -157,7 +157,7 @@ export const obtenerTareasLlamada = async (req, res) => {
       disponibilidad: registro.disponibilidad,
       motivacion: registro.motivacion,
       status: registro.status === 'pendiente' ? 'pendiente' : 
-              registro.status === 'contratado' ? 'completada' : 'cancelada',
+              (registro.status === 'contratado' ? 'completada' : 'cancelada'),
       estadoOriginal: registro.status || 'pendiente',
       fechaRegistro: registro.fechaRegistro,
       fechaCreacion: registro.fechaRegistro,
