@@ -52,6 +52,10 @@ const reclutamientoSchema = new mongoose.Schema({
   fechaRegistro: {
     type: Date,
     default: Date.now
+  },
+  tareaGenerada: {
+    type: Boolean,
+    default: false
   }
 });
 

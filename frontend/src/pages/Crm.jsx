@@ -5,11 +5,13 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../context/AuthContext';
+import { obtenerTareasLlamada } from '../services/reclutamientoService.js';
 
 function Crm() {
   const [tareas, setTareas] = useState([]); // lista completa para contadores
   const [tareasFiltradas, setTareasFiltradas] = useState([]); // lista a mostrar
   const [filtroEstado, setFiltroEstado] = useState('todas');
+  const [filtroTipo, setFiltroTipo] = useState('todas'); // 'todas', 'propias', 'reclutamiento'
   const [cargando, setCargando] = useState(true);
   const { usuario, login, logout, actualizarUsuario } = useAuth();
   const toast = useToast();
@@ -64,14 +66,24 @@ function Crm() {
     }
   }, [usuario]);
 
-  // Aplicar filtro cuando cambien tareas o el filtro
+  // Aplicar filtros cuando cambien tareas o los filtros
   useEffect(() => {
-    if (filtroEstado === 'todas') {
-      setTareasFiltradas(tareas);
-    } else {
-      setTareasFiltradas(tareas.filter(t => t.estado === filtroEstado));
+    let resultado = tareas;
+    
+    // Filtrar por estado
+    if (filtroEstado !== 'todas') {
+      resultado = resultado.filter(t => t.estado === filtroEstado);
     }
-  }, [tareas, filtroEstado]);
+    
+    // Filtrar por tipo
+    if (filtroTipo === 'propias') {
+      resultado = resultado.filter(t => t.tipo !== 'reclutamiento');
+    } else if (filtroTipo === 'reclutamiento') {
+      resultado = resultado.filter(t => t.tipo === 'reclutamiento');
+    }
+    
+    setTareasFiltradas(resultado);
+  }, [tareas, filtroEstado, filtroTipo]);
 
   // Cargar datos del usuario en el formulario cuando se activa el modo edición
   useEffect(() => {
@@ -88,15 +100,43 @@ function Crm() {
   const cargarTareas = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/tareas', {
+      
+      // Cargar tareas propias
+      const resTareas = await fetch('http://localhost:5000/api/tareas', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const data = await res.json();
-      if (data.success) {
-        // Ordenar: pendientes más antiguas primero, luego las de hoy, luego completadas
-        const ordenadas = ordenarTareas(data.data);
-        setTareas(ordenadas);
+      const dataTareas = await resTareas.json();
+      
+      let todasLasTareas = [];
+      
+      if (dataTareas.success) {
+        // Marcar tareas propias
+        const tareasPropias = dataTareas.data.map(t => ({
+          ...t,
+          esPropia: true
+        }));
+        todasLasTareas = [...tareasPropias];
       }
+      
+      // Cargar tareas de reclutamiento si el usuario es admin
+      if (usuario?.rol === 'admin') {
+        try {
+          const tareasReclutamiento = await obtenerTareasLlamada();
+          if (tareasReclutamiento.success) {
+            const tareasReclutamientoMarcadas = tareasReclutamiento.data.map(t => ({
+              ...t,
+              esPropia: false
+            }));
+            todasLasTareas = [...todasLasTareas, ...tareasReclutamientoMarcadas];
+          }
+        } catch (error) {
+          console.error('Error al cargar tareas de reclutamiento:', error);
+        }
+      }
+      
+      // Ordenar: pendientes más antiguas primero, luego las de hoy, luego completadas
+      const ordenadas = ordenarTareas(todasLasTareas);
+      setTareas(ordenadas);
     } catch (error) {
       toast({
         title: 'Error al cargar tareas',
@@ -496,7 +536,8 @@ function Crm() {
       seguimiento: 'purple',
       evento: 'orange',
       entrevista: 'pink',
-      contrato: 'red'
+      contrato: 'red',
+      reclutamiento: 'teal'
     };
     return colores[tipo] || 'gray';
   };
@@ -508,7 +549,8 @@ function Crm() {
       seguimiento: 'Seguimiento',
       evento: 'Evento',
       entrevista: 'Entrevista',
-      contrato: 'Contrato'
+      contrato: 'Contrato',
+      reclutamiento: 'Reclutamiento'
     };
     return labels[tipo] || tipo;
   };
@@ -607,6 +649,36 @@ function Crm() {
             <Heading as="h2" size="2xl" color="blue.500">{tareas.length}</Heading>
           </Box>
         </HStack>
+
+        {/* Filtros de tipo de tarea (solo para admin) */}
+        {usuario?.rol === 'admin' && (
+          <Box mb={4} display="flex" gap={2} flexWrap="wrap">
+            <Button
+              size="sm"
+              colorScheme={filtroTipo === 'todas' ? 'orange' : 'gray'}
+              variant={filtroTipo === 'todas' ? 'solid' : 'outline'}
+              onClick={() => setFiltroTipo('todas')}
+            >
+              Todas
+            </Button>
+            <Button
+              size="sm"
+              colorScheme={filtroTipo === 'propias' ? 'orange' : 'gray'}
+              variant={filtroTipo === 'propias' ? 'solid' : 'outline'}
+              onClick={() => setFiltroTipo('propias')}
+            >
+              Mis Tareas
+            </Button>
+            <Button
+              size="sm"
+              colorScheme={filtroTipo === 'reclutamiento' ? 'teal' : 'gray'}
+              variant={filtroTipo === 'reclutamiento' ? 'solid' : 'outline'}
+              onClick={() => setFiltroTipo('reclutamiento')}
+            >
+              📞 Reclutamiento
+            </Button>
+          </Box>
+        )}
 
         {/* Tabs */}
         <Tabs colorScheme="orange" variant="enclosed">

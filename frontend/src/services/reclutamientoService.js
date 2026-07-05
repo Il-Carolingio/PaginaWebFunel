@@ -1,0 +1,68 @@
+// Servicio para gestionar reclutamiento y tareas de llamada (HU-017)
+import api from './api.js';
+
+// Obtener todas las tareas de llamada de reclutamiento
+export const obtenerTareasLlamada = async () => {
+  try {
+    const response = await api.get('/reclutamiento/tareas-llamada');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener tareas de llamada:', error);
+    throw error;
+  }
+};
+
+// Marcar registro como tarea generada
+export const marcarTareaGenerada = async (id) => {
+  try {
+    const response = await api.put(`/reclutamiento/${id}/marcar-tarea-generada`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al marcar tarea generada:', error);
+    throw error;
+  }
+};
+
+// Obtener todos los registros de reclutamiento (para admin)
+export const obtenerTodosRegistros = async () => {
+  try {
+    const response = await api.get('/reclutamiento');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener registros:', error);
+    throw error;
+  }
+};
+
+// Obtener registro por ID
+export const obtenerRegistroPorId = async (id) => {
+  try {
+    const response = await api.get(`/reclutamiento/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener registro:', error);
+    throw error;
+  }
+};
+
+// Actualizar status del candidato
+export const actualizarStatusCandidato = async (id, status) => {
+  try {
+    const response = await api.put(`/reclutamiento/${id}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar status:', error);
+    throw error;
+  }
+};
+
+// Eliminar registro
+export const eliminarRegistro = async (id) => {
+  try {
+    const response = await api.delete(`/reclutamiento/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al eliminar registro:', error);
+    throw error;
+  }
+};
