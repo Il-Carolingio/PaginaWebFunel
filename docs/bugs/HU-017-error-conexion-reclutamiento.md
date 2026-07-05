@@ -42,7 +42,7 @@ Al intentar registrarse en "Únete al equipo", el formulario muestra error de co
 
 ## Estado
 - **Rama:** bugfix/HU-017-error-conexion-reclutamiento
-- **Último Commit:** 48ac748
+- **Último Commit:** 86b0873
 - **Pull Request:** https://github.com/Il-Carolingio/PaginaWebFunel/pull/1
 
 ## Hipótesis
