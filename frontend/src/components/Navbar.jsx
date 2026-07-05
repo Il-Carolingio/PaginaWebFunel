@@ -72,6 +72,9 @@ function Navbar() {
                 textDecoration: 'none',
                 color: 'white',
                 transform: 'translateY(-2px)',
+                _after: {
+                  transform: 'scaleX(1)',
+                },
               }}
               transition="all 0.2s"
               _after={{
@@ -85,9 +88,6 @@ function Navbar() {
                 transform: isActive(link.path) ? 'scaleX(1)' : 'scaleX(0)',
                 transition: 'transform 0.2s ease',
                 borderRadius: 'full',
-              }}
-              _hoverAfter={{
-                transform: 'scaleX(1)',
               }}
             >
               {link.label}
