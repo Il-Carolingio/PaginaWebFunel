@@ -20,6 +20,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { MdCheckCircle } from 'react-icons/md';
+import api from '../services/api.js';
 
 // Esquema de validación con Yup
 const schema = yup.object().shape({
@@ -43,18 +44,12 @@ function Reclutamiento() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('/api/reclutamiento/registro', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      const response = await api.post('/api/reclutamiento/registro', data);
       
-      const result = await response.json();
-      
-      if (response.ok) {
+      if (response.data) {
         toast({
           title: '¡Registro exitoso!',
-          description: result.message || 'Nos pondremos en contacto contigo pronto.',
+          description: response.data.message || 'Nos pondremos en contacto contigo pronto.',
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -62,21 +57,12 @@ function Reclutamiento() {
         });
         
         reset();
-      } else {
-        toast({
-          title: 'Error al registrar',
-          description: result.message || 'Por favor intenta de nuevo.',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-          position: 'top',
-        });
       }
     } catch (error) {
       console.error('Error:', error);
       toast({
-        title: 'Error de conexión',
-        description: 'Por favor intenta de nuevo más tarde.',
+        title: 'Error al registrar',
+        description: error.response?.data?.message || 'Por favor intenta de nuevo.',
         status: 'error',
         duration: 5000,
         isClosable: true,

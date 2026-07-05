@@ -9,6 +9,7 @@ import { enviarReporte } from './controllers/ReporteConfianzaController.js';
 import tareasRoutes from './routes/tareas.js';
 import authRoutes from './routes/auth.js';
 import vendedorRoutes from './routes/vendedor.js';
+import reclutamientoRoutes from './routes/reclutamiento.js';
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.post('/api/rifa/reporte-confianza/enviar', reporteLimiter, enviarReporte);
 app.use('/api/auth', authRoutes);
 app.use('/api/tareas', tareasRoutes);
 app.use('/api/vendedor', vendedorRoutes);
+app.use('/api/reclutamiento', reclutamientoRoutes);
 
 // Conectar a MongoDB y arrancar
 connectDB().then(() => {

@@ -1,4 +1,5 @@
 import Reclutamiento from '../models/Reclutamiento.js';
+import Tarea from '../models/Tarea.js';
 
 // Registrar nuevo candidato
 export const registrar = async (req, res) => {
@@ -31,6 +32,24 @@ export const registrar = async (req, res) => {
       status: 'pendiente' // Estado inicial
     });
 
+    await nuevoRegistro.save();
+
+    // Crear tarea automática en la colección tareas (HU-017)
+    // Nota: vendedorId es null porque es una tarea de reclutamiento general
+    const nuevaTarea = new Tarea({
+      tipo: 'llamada',
+      titulo: 'Reclutamiento',
+      descripcion: `Nombre: ${nombre}\nTeléfono: ${telefono}\nEmail: ${email}\nExperiencia: ${experiencia}\nDisponibilidad: ${disponibilidad}`,
+      fecha: null, // Sin fecha - se asignará después
+      hora: null, // Sin hora - se asignará después
+      estado: 'pendiente',
+      vendedorId: null // Tarea general, no asignada a vendedor específico
+    });
+
+    await nuevaTarea.save();
+
+    // Marcar el registro como tarea generada
+    nuevoRegistro.tareaGenerada = true;
     await nuevoRegistro.save();
 
     res.status(201).json({
@@ -131,6 +150,60 @@ export const actualizarStatus = async (req, res) => {
     console.error('Error al actualizar status:', error);
     res.status(500).json({
       message: 'Error al actualizar status',
+      error: error.message
+    });
+  }
+};
+
+// Obtener tareas de reclutamiento (para HU-017)
+export const obtenerTareasLlamada = async (req, res) => {
+  try {
+    // Obtener tareas con título "Reclutamiento" de la colección tareas
+    const tareas = await Tarea.find({ titulo: 'Reclutamiento' })
+      .sort({ createdAt: -1 })
+      .select('-__v')
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      message: 'Tareas de reclutamiento obtenidas exitosamente',
+      data: tareas,
+      total: tareas.length
+    });
+  } catch (error) {
+    console.error('Error al obtener tareas de reclutamiento:', error);
+    res.status(500).json({
+      message: 'Error al obtener tareas de reclutamiento',
+      error: error.message
+    });
+  }
+};
+
+// Marcar registro como tarea generada
+export const marcarTareaGenerada = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const registro = await Reclutamiento.findByIdAndUpdate(
+      id,
+      { tareaGenerada: true },
+      { new: true, select: '-__v' }
+    );
+
+    if (!registro) {
+      return res.status(404).json({
+        message: 'Registro no encontrado'
+      });
+    }
+
+    res.status(200).json({
+      message: 'Registro marcado como tarea generada',
+      data: registro
+    });
+  } catch (error) {
+    console.error('Error al marcar tarea generada:', error);
+    res.status(500).json({
+      message: 'Error al marcar tarea generada',
       error: error.message
     });
   }
