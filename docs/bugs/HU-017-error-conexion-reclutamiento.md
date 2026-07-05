@@ -4,8 +4,7 @@
 - **Fecha:** 2026-07-04
 - **Reportado por:** Usuario
 - **Severidad:** Alta
-- **Estado:** Pendiente de diagnóstico
-- **HU Relacionada:** HU-017
+- **Estado:** Resuelto - PR creado
 
 ## Descripción
 Al intentar registrarse en "Únete al equipo", el formulario muestra error de conexión. No se puede enviar el registro.
@@ -42,9 +41,8 @@ Al intentar registrarse en "Únete al equipo", el formulario muestra error de co
 
 ## Estado
 - **Rama:** bugfix/HU-017-error-conexion-reclutamiento
-- **Commit:** f851906
-- **Pull Request:** Pendiente de crear (requiere acción manual)
-- **URL para crear PR:** https://github.com/Il-Carolingio/PaginaWebFunel/pull/new/bugfix/HU-017-error-conexion-reclutamiento
+- **Commit:** 8aa5ef6
+- **Pull Request:** Creado - https://github.com/Il-Carolingio/PaginaWebFunel/pull/1
 
 ## Hipótesis
 1. El archivo de configuración de API tiene el puerto incorrecto (3000 en lugar de 5000)
