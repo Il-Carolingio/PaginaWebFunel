@@ -251,3 +251,43 @@ export const eliminarTarea = async (req, res) => {
     });
   }
 };
+
+/**
+ * Elimina una tarea específica que esté en estado "cancelada".
+ * - Vendedor: solo puede eliminar sus propias tareas canceladas.
+ * - Admin: puede eliminar cualquier tarea cancelada.
+ */
+export const eliminarTareaCancelada = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Construir query: buscar por ID y estado "cancelada"
+    const query = { _id: id, estado: 'cancelada' };
+
+    // Si no es admin, restringir a sus propias tareas
+    if (req.usuario.rol !== 'admin') {
+      query.vendedorId = req.usuario._id;
+    }
+
+    const tarea = await Tarea.findOneAndDelete(query);
+
+    if (!tarea) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tarea cancelada no encontrada o no tienes permiso para eliminarla'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Tarea "${tarea.titulo}" eliminada exitosamente`,
+      data: { titulo: tarea.titulo }
+    });
+  } catch (error) {
+    console.error('Error al eliminar tarea cancelada:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al eliminar la tarea cancelada'
+    });
+  }
+};

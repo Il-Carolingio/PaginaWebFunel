@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container, Progress, Alert, AlertIcon, AlertDescription, Divider } from '@chakra-ui/react';
-import { AddIcon, EditIcon, CheckIcon } from '@chakra-ui/icons';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container, Progress, Alert, AlertIcon, AlertDescription, Divider, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter } from '@chakra-ui/react';
+import { AddIcon, EditIcon, CheckIcon, DeleteIcon } from '@chakra-ui/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -17,6 +17,8 @@ function Crm() {
   const toast = useToast();
   const { isOpen: isOpenCrear, onOpen: onOpenCrear, onClose: onCloseCrear } = useDisclosure();
   const { isOpen: isOpenEditar, onOpen: onOpenEditar, onClose: onCloseEditar } = useDisclosure();
+  const { isOpen: isOpenEliminar, onOpen: onOpenEliminar, onClose: onCloseEliminar } = useDisclosure();
+  const cancelRefEliminar = useRef();
 
   const [formTarea, setFormTarea] = useState({
     tipo: 'cita',
@@ -38,6 +40,10 @@ function Crm() {
     ubicacion: '',
     estado: 'pendiente'
   });
+
+  // Estado para el diálogo de confirmación de eliminación
+  const [tareaAEliminar, setTareaAEliminar] = useState(null);
+  const [eliminandoTarea, setEliminandoTarea] = useState(false);
 
   // Estado para conflictos de horario en citas
   const [conflictoCita, setConflictoCita] = useState(null);
@@ -345,6 +351,60 @@ function Crm() {
         status: 'error',
         duration: 3000
       });
+    }
+  };
+
+  /**
+   * Abre el diálogo de confirmación para eliminar una tarea cancelada.
+   */
+  const handleConfirmarEliminarTarea = (tarea) => {
+    setTareaAEliminar(tarea);
+    onOpenEliminar();
+  };
+
+  /**
+   * Ejecuta la eliminación de la tarea cancelada.
+   */
+  const handleEliminarTareaCancelada = async () => {
+    if (!tareaAEliminar) return;
+
+    setEliminandoTarea(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/tareas/${tareaAEliminar._id}/cancelada`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast({
+          title: 'Tarea eliminada',
+          description: `"${data.data?.titulo || tareaAEliminar.titulo}" ha sido eliminada`,
+          status: 'success',
+          duration: 3000
+        });
+        onCloseEliminar();
+        setTareaAEliminar(null);
+        cargarTareas();
+      } else {
+        toast({
+          title: data.message || 'Error al eliminar tarea',
+          status: 'error',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error al eliminar tarea',
+        status: 'error',
+        duration: 3000
+      });
+    } finally {
+      setEliminandoTarea(false);
     }
   };
 
@@ -745,6 +805,17 @@ function Crm() {
                             >
                               Editar
                             </Button>
+                            {tarea.estado === 'cancelada' && (
+                              <Button
+                                colorScheme="red"
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<DeleteIcon />}
+                                onClick={() => handleConfirmarEliminarTarea(tarea)}
+                              >
+                                Borrar
+                              </Button>
+                            )}
                           </VStack>
                         </HStack>
                       </Box>
@@ -1159,6 +1230,46 @@ function Crm() {
           </form>
         </ModalContent>
       </Modal>
+
+      {/* AlertDialog de Confirmación para Eliminar Tarea Cancelada */}
+      <AlertDialog
+        isOpen={isOpenEliminar}
+        leastDestructiveRef={cancelRefEliminar}
+        onClose={() => { setTareaAEliminar(null); onCloseEliminar(); }}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Eliminar tarea cancelada
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              {tareaAEliminar ? (
+                <Text>
+                  ¿Estás seguro de eliminar la tarea <strong>"{tareaAEliminar.titulo}"</strong>?
+                  Esta acción no se puede deshacer.
+                </Text>
+              ) : (
+                <Text>¿Estás seguro de eliminar esta tarea cancelada?</Text>
+              )}
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRefEliminar} onClick={() => { setTareaAEliminar(null); onCloseEliminar(); }}>
+                Cancelar
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleEliminarTareaCancelada}
+                ml={3}
+                isLoading={eliminandoTarea}
+              >
+                Eliminar
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 }
