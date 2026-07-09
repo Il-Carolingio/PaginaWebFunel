@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Box, Heading, Text, VStack, HStack, Badge, Tabs, TabList, TabPanels, Tab, TabPanel, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, FormControl, FormLabel, Input, Select, Textarea, useToast, Container, Progress, Alert, AlertIcon, AlertDescription, Divider, AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogBody, AlertDialogFooter } from '@chakra-ui/react';
-import { AddIcon, EditIcon, CheckIcon, DeleteIcon } from '@chakra-ui/icons';
+import { AddIcon, EditIcon, CheckIcon, DeleteIcon, EmailIcon } from '@chakra-ui/icons';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -19,6 +19,7 @@ function Crm() {
   const { isOpen: isOpenEditar, onOpen: onOpenEditar, onClose: onCloseEditar } = useDisclosure();
   const { isOpen: isOpenEliminar, onOpen: onOpenEliminar, onClose: onCloseEliminar } = useDisclosure();
   const cancelRefEliminar = useRef();
+  const { isOpen: isOpenEnviar, onOpen: onOpenEnviar, onClose: onCloseEnviar } = useDisclosure();
 
   const [formTarea, setFormTarea] = useState({
     tipo: 'cita',
@@ -417,6 +418,87 @@ function Crm() {
     });
   };
 
+  // Estado para envío de correo de reclutamiento
+  const [tareaReclutamiento, setTareaReclutamiento] = useState(null);
+  const [enviandoCorreo, setEnviandoCorreo] = useState(false);
+  const [formEnvioReclutamiento, setFormEnvioReclutamiento] = useState({
+    nombre: '',
+    email: '',
+    rol: 'vendedor'
+  });
+
+  /**
+   * Abre el diálogo para enviar correo de registro a candidato de reclutamiento
+   */
+  const handleEnviarCorreoReclutamiento = (tarea) => {
+    setTareaReclutamiento(tarea);
+    // Extraer datos del candidato desde la descripción de la tarea
+    const descripcion = tarea.descripcion || '';
+    const nombreMatch = descripcion.match(/Nombre: (.+)/);
+    const emailMatch = descripcion.match(/Email: (.+)/);
+    
+    setFormEnvioReclutamiento({
+      nombre: nombreMatch ? nombreMatch[1].trim() : tarea.titulo,
+      email: emailMatch ? emailMatch[1].trim() : '',
+      rol: 'vendedor'
+    });
+    onOpenEnviar();
+  };
+
+  /**
+   * Envía el correo de registro al candidato
+   */
+  const handleEnviarCorreoRegistro = async () => {
+    if (!tareaReclutamiento) return;
+
+    setEnviandoCorreo(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/reclutamiento/enviar-correo/${tareaReclutamiento._id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formEnvioReclutamiento)
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        toast({
+          title: 'Correo enviado exitosamente',
+          description: `Se envió el correo de registro a ${formEnvioReclutamiento.nombre}`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+          position: 'top',
+        });
+        onCloseEnviar();
+        setTareaReclutamiento(null);
+        cargarTareas();
+      } else {
+        toast({
+          title: data.message || 'Error al enviar correo',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+          position: 'top',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error al enviar correo',
+        description: error.message || 'Error desconocido',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+        position: 'top',
+      });
+    } finally {
+      setEnviandoCorreo(false);
+    }
+  };
+
   const handleEditarPerfil = () => {
     setModoEdicion(true);
   };
@@ -805,6 +887,17 @@ function Crm() {
                             >
                               Editar
                             </Button>
+                            {tarea.tipo === 'reclutamiento' && usuario?.rol === 'admin' && (
+                              <Button
+                                colorScheme="blue"
+                                variant="ghost"
+                                size="sm"
+                                leftIcon={<EmailIcon />}
+                                onClick={() => handleEnviarCorreoReclutamiento(tarea)}
+                              >
+                                Enviar Correo
+                              </Button>
+                            )}
                             {tarea.estado === 'cancelada' && (
                               <Button
                                 colorScheme="red"
@@ -1270,6 +1363,69 @@ function Crm() {
           </AlertDialogContent>
         </AlertDialogOverlay>
       </AlertDialog>
+
+      {/* Modal de Envío de Correo de Reclutamiento */}
+      <Modal isOpen={isOpenEnviar} onClose={onCloseEnviar} size="lg">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Enviar Correo de Registro</ModalHeader>
+          <ModalBody>
+            <VStack spacing={4}>
+              <Alert status="info" borderRadius="md">
+                <AlertIcon />
+                <AlertDescription>
+                  Se enviará un correo con un enlace de registro al candidato. El enlace expirará en 24 horas.
+                </AlertDescription>
+              </Alert>
+
+              <FormControl isRequired>
+                <FormLabel>Nombre</FormLabel>
+                <Input
+                  value={formEnvioReclutamiento.nombre}
+                  onChange={(e) => setFormEnvioReclutamiento({...formEnvioReclutamiento, nombre: e.target.value})}
+                  placeholder="Nombre del candidato"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  value={formEnvioReclutamiento.email}
+                  onChange={(e) => setFormEnvioReclutamiento({...formEnvioReclutamiento, email: e.target.value})}
+                  placeholder="correo@ejemplo.com"
+                  type="email"
+                />
+              </FormControl>
+
+              <FormControl isRequired>
+                <FormLabel>Rol</FormLabel>
+                <Select
+                  value={formEnvioReclutamiento.rol}
+                  onChange={(e) => setFormEnvioReclutamiento({...formEnvioReclutamiento, rol: e.target.value})}
+                >
+                  <option value="vendedor">Vendedor</option>
+                  <option value="admin">Administrador</option>
+                  <option value="invitado">Invitado</option>
+                </Select>
+              </FormControl>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" onClick={onCloseEnviar} mr={3}>
+              Cancelar
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={handleEnviarCorreoRegistro}
+              isLoading={enviandoCorreo}
+              loadingText="Enviando..."
+              leftIcon={<EmailIcon />}
+            >
+              Enviar Correo
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 }

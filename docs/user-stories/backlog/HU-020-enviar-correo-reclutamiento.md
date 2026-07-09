@@ -3,8 +3,8 @@
 **Estado:** Pendiente de evaluación
 **Prioridad:** Media
 **Sprint:** 4
-**Esfuerzo estimado:** 3 horas
-**Tiempo estimado:** 0.75 días
+**Esfuerzo estimado:** 2.5 horas
+**Tiempo estimado:** 0.625 días
 **Sprint Inicio:** 2026-07-05
 **Sprint Fin:** 2026-07-19
 
@@ -13,21 +13,31 @@
 ## Descripción
 
 > **Como** usuario administrador,
-> **Quiero** enviar un correo electrónico a un candidato de reclutamiento como vendedor,
+> **Quiero** enviar un correo electrónico a un candidato de reclutamiento desde las tareas del CRM,
 > **Para** verificar que el correo sea válido y enviarle el enlace de registro dentro del CRM, permitiendo el alta de un nuevo vendedor.
+
+---
+
+## Contexto
+- Cada persona que se registra para ser reclutada se convierte en una **tarea** de tipo "reclutamiento" en el CRM
+- Estas tareas se generan automáticamente cuando alguien llena el formulario de reclutamiento
+- El administrador ve estas tareas en el CRM, en el filtro "Reclutamiento"
+- Desde cada tarea de reclutamiento, el admin debe poder enviar un correo de registro al candidato
 
 ---
 
 ## Criterios de Aceptación
 
-- [ ] El administrador puede ver un botón "Enviar correo de registro" en la página de reclutamiento
-- [ ] Al hacer clic, se muestra un formulario o diálogo para confirmar el envío
-- [ ] El sistema valida que el correo del candidato tenga formato válido
-- [ ] Se envía un correo electrónico al candidato con un enlace único de registro
-- [ ] El enlace lleva a una página de registro donde el candidato puede crear su cuenta
-- [ ] Una vez registrado, el candidato queda asociado al proceso de reclutamiento
-- [ ] Se muestra un mensaje de confirmación al administrador
-- [ ] Si el correo falla al enviarse, se muestra un mensaje de error
+- [ ] En las tareas de tipo "reclutamiento" del CRM, el administrador ve un botón "Enviar Correo de Registro"
+- [ ] Al hacer clic, se muestra un diálogo/modal con formulario prellenado con los datos del candidato
+- [ ] El formulario muestra: email (editable), nombre (editable), rol (select: admin/vendedor/invitado)
+- [ ] El sistema valida que el correo tenga formato válido
+- [ ] Al confirmar, se envía un correo electrónico con un enlace único de registro
+- [ ] El enlace lleva a una página donde el candidato puede completar su registro
+- [ ] La tarea de reclutamiento pasa a estado "completada" después de enviar el correo
+- [ ] Se muestra mensaje de confirmación al administrador
+- [ ] Si el correo falla, se muestra mensaje de error
+- [ ] Solo el administrador puede ver y usar el botón de envío
 
 ---
 
@@ -35,32 +45,34 @@
 
 - **Endpoint:** `POST /api/reclutamiento/enviar-correo/:id` (nuevo endpoint)
 - **Backend:** 
-  - Validar formato de correo
-  - Generar token único de registro
+  - Modificar modelo Reclutamiento: agregar tokenRegistro, tokenExpiracion, registroCompletado
+  - Generar token JWT con expiración de 24h
   - Enviar correo con enlace usando nodemailer
-  - Almacenar token y fecha de expiración
+  - Marcar tarea de reclutamiento como completada
 - **Frontend:** 
-  - Agregar botón en Reclutamiento.jsx
-  - Mostrar estado de envío (éxito/error)
-- **Email:** Usar plantilla HTML con enlace de registro
-- **Token:** JWT o token aleatorio con expiración (24h)
+  - Modificar Crm.jsx: agregar botón "Enviar Correo" en tareas de tipo "reclutamiento"
+  - Modal con formulario: email, nombre, rol
+  - Validar permisos de admin
+- **Email:** Plantilla HTML con enlace de registro
+- **Token:** JWT con reclutamientoId, email, nombre, rol (24h expiración)
 
 ---
 
 ## Dependencias
 
-- ✅ **HU-012** - Sistema de reclutamiento (Completada - provee estructura)
+- ✅ **HU-012** - Sistema de reclutamiento (Completada - provee modelo Reclutamiento)
 - ✅ **HU-014** - Registro de vendedores (Completada - provee registro)
+- ✅ **HU-017** - Tareas de reclutamiento en CRM (Completada - provee tareas)
 
 ---
 
 ## Estimación
 
 - **Complejidad:** Media
-- **Esfuerzo:** 3 horas
-- **Tiempo:** 0.75 días
+- **Esfuerzo:** 2.5 horas
+- **Tiempo:** 0.625 días
 
 **Desglose:**
-- Backend: Generar token + endpoint + envío de correo: 1.5h
-- Frontend: Botón + formulario + manejo de estados: 1h
+- Backend (modelo + controlador + ruta + email): 1.5h
+- Frontend Crm.jsx (botón + modal + formulario): 1h
 - Testing y validación: 0.5h
