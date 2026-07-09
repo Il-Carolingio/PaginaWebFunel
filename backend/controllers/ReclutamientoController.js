@@ -238,13 +238,13 @@ export const eliminar = async (req, res) => {
 export const enviarCorreoRegistro = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, rol } = req.body;
+    const { nombre, email, rol } = req.body;
 
     // Validar datos requeridos
-    if (!nombre || !rol) {
+    if (!nombre || !email || !rol) {
       return res.status(400).json({
         success: false,
-        message: 'Nombre y rol son requeridos'
+        message: 'Nombre, email y rol son requeridos'
       });
     }
 
@@ -256,12 +256,12 @@ export const enviarCorreoRegistro = async (req, res) => {
       });
     }
 
-    // Buscar el registro de reclutamiento
-    const registro = await Reclutamiento.findById(id);
+    // Buscar el registro de reclutamiento por email
+    const registro = await Reclutamiento.findOne({ email: email.toLowerCase() });
     if (!registro) {
       return res.status(404).json({
         success: false,
-        message: 'Registro de reclutamiento no encontrado'
+        message: 'Registro de reclutamiento no encontrado con ese email'
       });
     }
 
