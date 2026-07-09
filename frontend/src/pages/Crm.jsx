@@ -887,7 +887,7 @@ function Crm() {
                             >
                               Editar
                             </Button>
-                            {tarea.tipo === 'reclutamiento' && usuario?.rol === 'admin' && (
+                            {tarea.titulo === 'Reclutamiento' && usuario?.rol === 'admin' && (
                               <Button
                                 colorScheme="blue"
                                 variant="ghost"
