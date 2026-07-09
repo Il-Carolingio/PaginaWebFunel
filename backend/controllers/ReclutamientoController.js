@@ -233,3 +233,149 @@ export const eliminar = async (req, res) => {
     });
   }
 };
+
+// Enviar correo de registro a candidato de reclutamiento
+export const enviarCorreoRegistro = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, rol } = req.body;
+
+    // Validar datos requeridos
+    if (!nombre || !rol) {
+      return res.status(400).json({
+        success: false,
+        message: 'Nombre y rol son requeridos'
+      });
+    }
+
+    // Validar rol
+    if (!['admin', 'vendedor', 'invitado'].includes(rol)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rol inválido. Debe ser: admin, vendedor o invitado'
+      });
+    }
+
+    // Buscar el registro de reclutamiento
+    const registro = await Reclutamiento.findById(id);
+    if (!registro) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registro de reclutamiento no encontrado'
+      });
+    }
+
+    // Verificar que no esté ya completado
+    if (registro.registroCompletado) {
+      return res.status(400).json({
+        success: false,
+        message: 'El registro ya fue completado anteriormente'
+      });
+    }
+
+    // Verificar que no tenga token activo
+    if (registro.tokenRegistro && registro.tokenExpiracion && new Date() < registro.tokenExpiracion) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ya existe un token de registro activo. Espera a que expire o usa ese enlace.'
+      });
+    }
+
+    // Generar token JWT
+    const jwt = (await import('jsonwebtoken')).default;
+    const token = jwt.sign(
+      {
+        reclutamientoId: registro._id,
+        email: registro.email,
+        nombre: nombre || registro.nombre,
+        rol: rol
+      },
+      process.env.JWT_SECRET || 'tu_secreto_jwt',
+      { expiresIn: '24h' }
+    );
+
+    // Actualizar el registro con el token
+    registro.tokenRegistro = token;
+    registro.tokenExpiracion = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+    await registro.save();
+
+    // Marcar la tarea de reclutamiento como completada
+    await Tarea.findOneAndUpdate(
+      { titulo: 'Reclutamiento', estado: 'pendiente' },
+      { estado: 'completada', fechaCompletado: new Date() },
+      { sort: { createdAt: -1 } }
+    );
+
+    // Enviar correo
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const enlaceRegistro = `${frontendUrl}/registro-vendedor?token=${token}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head><meta charset="utf-8"></head>
+      <body style="margin:0; padding:20px; font-family:Arial, sans-serif; background-color:#f4f4f4;">
+        <div style="max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+          <div style="background-color:#2B6CB0; color:white; padding:20px; text-align:center;">
+            <h2 style="margin:0;">Royal Prestige</h2>
+            <p style="margin:5px 0 0; font-size:14px; opacity:0.9;">Invitación a Registro de Vendedor</p>
+          </div>
+          <div style="padding:20px;">
+            <h3 style="color:#2B6CB0; margin-top:0;">¡Bienvenido a Royal Prestige!</h3>
+            <p style="font-size:16px; color:#333;">
+              Hola <strong>${nombre || registro.nombre}</strong>,
+            </p>
+            <p style="font-size:16px; color:#333;">
+              Has sido invitado a formar parte de nuestro equipo de vendedores. Para completar tu registro, haz clic en el siguiente enlace:
+            </p>
+            <div style="text-align:center; margin:30px 0;">
+              <a href="${enlaceRegistro}" style="background-color:#2B6CB0; color:white; padding:12px 30px; text-decoration:none; border-radius:5px; font-size:16px; font-weight:bold;">
+                Completar Registro
+              </a>
+            </div>
+            <p style="font-size:14px; color:#666;">
+              O copia y pega este enlace en tu navegador:<br>
+              <a href="${enlaceRegistro}" style="color:#2B6CB0; word-break:break-all;">${enlaceRegistro}</a>
+            </p>
+            <p style="font-size:14px; color:#666;">
+              Este enlace expirará en <strong>24 horas</strong>.
+            </p>
+            <hr style="border:none; border-top:1px solid #e0e0e0; margin:20px 0;">
+            <p style="font-size:12px; color:#999; text-align:center;">
+              Si no solicitaste este registro, puedes ignorar este correo.<br>
+              Por favor no respondas a este mensaje.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Importar servicio de email
+    const { enviarCorreo } = await import('../services/emailService.js');
+
+    await enviarCorreo({
+      to: registro.email,
+      subject: '¡Bienvenido a Royal Prestige! Completa tu registro',
+      html
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Correo de registro enviado exitosamente',
+      data: {
+        email: registro.email,
+        nombre: nombre || registro.nombre,
+        rol: rol,
+        tokenExpiracion: registro.tokenExpiracion
+      }
+    });
+  } catch (error) {
+    console.error('Error al enviar correo de registro:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al enviar el correo de registro',
+      error: error.message
+    });
+  }
+};

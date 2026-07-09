@@ -8,6 +8,7 @@ import Funnel from './pages/Funnel';
 import Catalogo from './pages/Catalogo';
 import Reclutamiento from './pages/Reclutamiento';
 import Crm from './pages/Crm';
+import AdminReclutamiento from './pages/AdminReclutamiento';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/rifa" element={<Funnel />} />
                 <Route path="/catalogo" element={<Catalogo />} />
                 <Route path="/reclutamiento" element={<Reclutamiento />} />
+                <Route path="/admin/reclutamiento" element={<AdminReclutamiento />} />
                 <Route path="/crm" element={<Crm />} />
               </Routes>
             </Container>

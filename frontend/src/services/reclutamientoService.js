@@ -66,3 +66,14 @@ export const eliminarRegistro = async (id) => {
     throw error;
   }
 };
+
+// Enviar correo de registro a candidato
+export const enviarCorreoRegistro = async (id, datos) => {
+  try {
+    const response = await api.post(`/api/reclutamiento/enviar-correo/${id}`, datos);
+    return response.data;
+  } catch (error) {
+    console.error('Error al enviar correo de registro:', error);
+    throw error;
+  }
+};

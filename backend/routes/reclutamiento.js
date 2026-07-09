@@ -1,5 +1,5 @@
 import express from 'express';
-import { registrar, obtenerTodos, obtenerPorId, actualizarStatus, eliminar, obtenerTareasLlamada, marcarTareaGenerada } from '../controllers/ReclutamientoController.js';
+import { registrar, obtenerTodos, obtenerPorId, actualizarStatus, eliminar, obtenerTareasLlamada, marcarTareaGenerada, enviarCorreoRegistro } from '../controllers/ReclutamientoController.js';
 
 const router = express.Router();
 
@@ -23,5 +23,8 @@ router.put('/:id/marcar-tarea-generada', marcarTareaGenerada);
 
 // DELETE /api/reclutamiento/:id - Eliminar registro (admin)
 router.delete('/:id', eliminar);
+
+// POST /api/reclutamiento/enviar-correo/:id - Enviar correo de registro (admin)
+router.post('/enviar-correo/:id', enviarCorreoRegistro);
 
 export default router;

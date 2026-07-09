@@ -56,8 +56,23 @@ const reclutamientoSchema = new mongoose.Schema({
   tareaGenerada: {
     type: Boolean,
     default: false
+  },
+  tokenRegistro: {
+    type: String,
+    default: null
+  },
+  tokenExpiracion: {
+    type: Date,
+    default: null
+  },
+  registroCompletado: {
+    type: Boolean,
+    default: false
   }
 });
+
+// Índice para búsqueda de token
+reclutamientoSchema.index({ tokenRegistro: 1 });
 
 // Índices para búsquedas frecuentes
 reclutamientoSchema.index({ email: 1 }, { unique: true });
