@@ -175,28 +175,47 @@ export const registrarProspecto = async (req, res) => {
       });
 
       if (prospectosConfianza >= 5) {
-        console.log(`[ProspectoController] Se alcanzaron ${prospectosConfianza} prospectos de confianza. Enviando notificación...`);
+        console.log(`[ProspectoController] Se alcanzaron ${prospectosConfianza} prospectos de confianza. Procesando notificación en background...`);
         
-        const prospectos = await Prospecto.find({
-          cumpleFiltros: true,
-          reporteEnviado: false,
-        })
-          .sort({ createdAt: -1 })
-          .limit(5)
-          .lean();
+        // ✅ RESPONDER INMEDIATAMENTE AL CLIENTE (sin esperar el envío del correo)
+        res.status(201).json({
+          success: true,
+          message: `¡Tu registro fue exitoso! Tu número de proceso es ${nuevoProspecto.numeroRifa}. Conserva este número para reclamar tu premio en caso de resultar ganador/a. Te deseamos mucha suerte en la rifa.`,
+          numeroRifa: nuevoProspecto.numeroRifa,
+        });
+        
+        // ✅ PROCESAR REPORTE EN BACKGROUND (sin bloquear la respuesta)
+        setImmediate(async () => {
+          try {
+            const prospectos = await Prospecto.find({
+              cumpleFiltros: true,
+              reporteEnviado: false,
+            })
+              .sort({ createdAt: -1 })
+              .limit(5)
+              .lean();
 
-        try {
-          await enviarReporteConfianza(prospectos);
-          
-          await Prospecto.updateMany(
-            { _id: { $in: prospectos.map(p => p._id) } },
-            { $set: { reporteEnviado: true } }
-          );
-          
-          console.log(`[ProspectoController] Notificación enviada exitosamente para ${prospectos.length} prospectos`);
-        } catch (error) {
-          console.error('[ProspectoController] Error al enviar notificación:', error);
-        }
+            if (prospectos.length > 0) {
+              // Actualizar prospectos como enviados PRIMERO
+              await Prospecto.updateMany(
+                { _id: { $in: prospectos.map(p => p._id) } },
+                { $set: { reporteEnviado: true } }
+              );
+              
+              console.log(`[ProspectoController] Prospectos marcados como enviados: ${prospectos.length}`);
+              
+              // Luego enviar el correo
+              await enviarReporteConfianza(prospectos);
+              
+              console.log(`[ProspectoController] Reporte enviado exitosamente en background para ${prospectos.length} prospectos`);
+            }
+          } catch (error) {
+            console.error('[ProspectoController] Error en background job:', error);
+            // No afecta la respuesta al usuario
+          }
+        });
+        
+        return; // ✅ IMPORTANTE: Salir de la función para no enviar respuesta dos veces
       }
     }
 
