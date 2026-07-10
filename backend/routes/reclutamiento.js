@@ -13,6 +13,16 @@ router.get('/tareas-llamada', obtenerTareasLlamada);
 // GET /api/reclutamiento - Obtener todos los registros (admin)
 router.get('/', obtenerTodos);
 
+// GET /api/reclutamiento/validar-token - Validar token de registro (público)
+// IMPORTANTE: Esta ruta debe estar ANTES de /:id para que no sea confundida con un ID
+router.get('/validar-token', validarToken);
+
+// POST /api/reclutamiento/completar-registro - Completar registro con token (público)
+router.post('/completar-registro', completarRegistro);
+
+// POST /api/reclutamiento/enviar-correo/:id - Enviar correo de registro (admin)
+router.post('/enviar-correo/:id', enviarCorreoRegistro);
+
 // GET /api/reclutamiento/:id - Obtener registro por ID (admin)
 router.get('/:id', obtenerPorId);
 
@@ -24,14 +34,5 @@ router.put('/:id/marcar-tarea-generada', marcarTareaGenerada);
 
 // DELETE /api/reclutamiento/:id - Eliminar registro (admin)
 router.delete('/:id', eliminar);
-
-// POST /api/reclutamiento/enviar-correo/:id - Enviar correo de registro (admin)
-router.post('/enviar-correo/:id', enviarCorreoRegistro);
-
-// POST /api/reclutamiento/completar-registro - Completar registro con token (público)
-router.post('/completar-registro', completarRegistro);
-
-// GET /api/reclutamiento/validar-token - Validar token de registro (público)
-router.get('/validar-token', validarToken);
 
 export default router;
