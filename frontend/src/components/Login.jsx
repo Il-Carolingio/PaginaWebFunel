@@ -57,7 +57,11 @@ function Login() {
         <Box bg="white" p={8} borderRadius="xl" boxShadow="2xl">
           <VStack spacing={6}>
             <Box textAlign="center">
-              <Link as={RouterLink} to="/" display="flex" alignItems="center" justifyContent="center">
+              <Link as={RouterLink} to="/" 
+              display="flex" 
+              alignItems="center" 
+              justifyContent="center"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <Image
                   src="/homeImages/FullLogo_Transparent.png"
                   borderRadius="20%"
