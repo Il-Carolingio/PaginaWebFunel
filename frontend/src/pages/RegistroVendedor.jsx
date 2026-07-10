@@ -41,7 +41,11 @@ function RegistroVendedor() {
   // Validar token al cargar la página
   useEffect(() => {
     const validarToken = async () => {
+      console.log('🔍 Iniciando validación de token...');
+      console.log('Token recibido:', token);
+      
       if (!token) {
+        console.error('❌ No se proporcionó token');
         setError('No se proporcionó un token de registro');
         setValidando(false);
         setCargando(false);
@@ -49,16 +53,20 @@ function RegistroVendedor() {
       }
 
       try {
+        console.log('📡 Llamando a validarTokenRegistro...');
         const resultado = await validarTokenRegistro(token);
+        console.log('✅ Resultado:', resultado);
         
         if (resultado.success) {
+          console.log('✅ Token válido, datos:', resultado.data);
           setDatosCandidato(resultado.data);
         } else {
+          console.error('❌ Token inválido:', resultado.message);
           setError(resultado.message || 'Token inválido');
         }
       } catch (error) {
+        console.error('❌ Error en validación:', error);
         setError('Error al validar el token. Por favor, intenta de nuevo.');
-        console.error('Error validando token:', error);
       } finally {
         setValidando(false);
         setCargando(false);

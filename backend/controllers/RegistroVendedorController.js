@@ -126,7 +126,10 @@ export const validarToken = async (req, res) => {
   try {
     const { token } = req.query;
 
+    console.log('🔍 Backend - Validando token:', token);
+
     if (!token) {
+      console.error('❌ Backend - Token no proporcionado');
       return res.status(400).json({
         success: false,
         message: 'Token no proporcionado'
@@ -137,7 +140,9 @@ export const validarToken = async (req, res) => {
     let decoded;
     try {
       decoded = jwt.verify(token, JWT_SECRET);
+      console.log('✅ Backend - Token decodificado:', decoded);
     } catch (error) {
+      console.error('❌ Backend - Token inválido o expirado:', error.message);
       return res.status(400).json({
         success: false,
         message: 'Token inválido o expirado',
@@ -148,6 +153,7 @@ export const validarToken = async (req, res) => {
     // Buscar el registro de reclutamiento
     const registro = await Reclutamiento.findById(decoded.reclutamientoId);
     if (!registro) {
+      console.error('❌ Backend - Registro no encontrado:', decoded.reclutamientoId);
       return res.status(404).json({
         success: false,
         message: 'Registro de reclutamiento no encontrado'
@@ -156,6 +162,7 @@ export const validarToken = async (req, res) => {
 
     // Verificar que el token coincida
     if (registro.tokenRegistro !== token) {
+      console.error('❌ Backend - Token no coincide:', { tokenEnBD: registro.tokenRegistro, tokenRecibido: token });
       return res.status(400).json({
         success: false,
         message: 'Token no válido'
@@ -164,6 +171,7 @@ export const validarToken = async (req, res) => {
 
     // Verificar que no haya expirado
     if (new Date() > registro.tokenExpiracion) {
+      console.error('❌ Backend - Token expirado:', { expiracion: registro.tokenExpiracion, ahora: new Date() });
       return res.status(400).json({
         success: false,
         message: 'El token ha expirado',
@@ -173,6 +181,7 @@ export const validarToken = async (req, res) => {
 
     // Verificar que no esté ya completado
     if (registro.registroCompletado) {
+      console.error('❌ Backend - Registro ya completado');
       return res.status(400).json({
         success: false,
         message: 'El registro ya fue completado anteriormente',
@@ -181,6 +190,7 @@ export const validarToken = async (req, res) => {
     }
 
     // Token válido, devolver datos del candidato
+    console.log('✅ Backend - Token válido, enviando datos del candidato');
     res.status(200).json({
       success: true,
       message: 'Token válido',

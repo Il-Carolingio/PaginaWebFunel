@@ -81,12 +81,14 @@ export const enviarCorreoRegistro = async (id, datos) => {
 // Validar token de registro
 export const validarTokenRegistro = async (token) => {
   try {
+    console.log('🔑 Validando token:', token);
     const response = await api.get(`/api/reclutamiento/validar-token`, {
       params: { token }
     });
+    console.log('✅ Respuesta de validación:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error al validar token:', error);
+    console.error('❌ Error al validar token:', error.response?.data || error.message);
     throw error;
   }
 };
