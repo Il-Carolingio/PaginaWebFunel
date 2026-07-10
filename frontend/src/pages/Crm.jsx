@@ -6,6 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 import { obtenerTareasLlamada } from '../services/reclutamientoService.js';
+import Login from '../components/Login.jsx';
 
 function Crm() {
   const [tareas, setTareas] = useState([]); // lista completa para contadores
@@ -683,58 +684,7 @@ function Crm() {
 
   // Si no hay usuario, mostrar login
   if (!usuario) {
-    return (
-      <Box minH="100vh" bg="gray.50" display="flex" alignItems="center" justifyContent="center" p={4}>
-        <Container maxW="md">
-          <Box bg="white" p={8} borderRadius="xl" boxShadow="2xl">
-            <VStack spacing={6}>
-              <Box textAlign="center">
-                <Heading as="h1" size="xl" color="orange.500" mb={2}>
-                  CRM Royal Prestige
-                </Heading>
-                <Text color="gray.600">Inicia sesión para acceder al panel de vendedores</Text>
-              </Box>
-
-              <form onSubmit={handleLogin} style={{ width: '100%' }}>
-                <VStack spacing={4}>
-                  <Input
-                    type="email"
-                    placeholder="Correo electrónico"
-                    value={formLogin.email}
-                    onChange={(e) => setFormLogin({...formLogin, email: e.target.value})}
-                    required
-                    size="lg"
-                  />
-                  <Input
-                    type="password"
-                    placeholder="Contraseña"
-                    value={formLogin.password}
-                    onChange={(e) => setFormLogin({...formLogin, password: e.target.value})}
-                    required
-                    size="lg"
-                  />
-                  <Button
-                    type="submit"
-                    colorScheme="orange"
-                    size="lg"
-                    width="100%"
-                    isLoading={loginCargando}
-                    _hover={{ transform: 'scale(1.02)' }}
-                    transition="all 0.2s"
-                  >
-                    Iniciar Sesión
-                  </Button>
-                </VStack>
-              </form>
-
-              <Text fontSize="sm" color="gray.500" textAlign="center">
-                ¿Problemas para acceder? Contacta al administrador
-              </Text>
-            </VStack>
-          </Box>
-        </Container>
-      </Box>
-    );
+    return<Login/>;
   }
 
   // Si hay usuario, mostrar dashboard

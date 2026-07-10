@@ -1,10 +1,22 @@
-import { useState } from 'react';
-import { Box, Heading, Text, Input, Button, VStack, useToast, Container } from '@chakra-ui/react';
-import { useAuth } from '../context/AuthContext';
+import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
+import {
+  Box,
+  Heading,
+  Text,
+  Input,
+  Button,
+  VStack,
+  useToast,
+  Container,
+  Image,
+  Link
+} from "@chakra-ui/react";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [cargando, setCargando] = useState(false);
   const { login } = useAuth();
   const toast = useToast();
@@ -17,14 +29,14 @@ function Login() {
 
     if (resultado.success) {
       toast({
-        title: 'Inicio de sesión exitoso',
-        status: 'success',
+        title: "Inicio de sesión exitoso",
+        status: "success",
         duration: 3000,
       });
     } else {
       toast({
         title: resultado.message,
-        status: 'error',
+        status: "error",
         duration: 5000,
       });
     }
@@ -33,18 +45,37 @@ function Login() {
   };
 
   return (
-    <Box minH="100vh" bg="gray.50" display="flex" alignItems="center" justifyContent="center" p={4}>
+    <Box
+      minH="100vh"
+      bg="gray.50"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      p={4}
+    >
       <Container maxW="md">
         <Box bg="white" p={8} borderRadius="xl" boxShadow="2xl">
           <VStack spacing={6}>
             <Box textAlign="center">
-              <Heading as="h1" size="xl" color="orange.500" mb={2}>
-                CRM Royal Prestige
-              </Heading>
-              <Text color="gray.600">Inicia sesión para acceder al panel de vendedores</Text>
+              <Link as={RouterLink} to="/" display="flex" alignItems="center" justifyContent="center">
+                <Image
+                  src="/homeImages/FullLogo_Transparent.png"
+                  borderRadius="20%"
+                  alt="Casa Pleroma"
+                  position="center"
+                  height={{ base: "30px", md: "50px", lg: "150px" }} // Móvil: 30px, Tablet: 50px, Escritorio: 60px
+                  width="auto"
+                  objectFit="contain"
+                  _hover={{ opacity: 0.8 }}
+                  transition="opacity 0.2s"
+                />
+              </Link>
+              <Text color="gray.600">
+                Inicia sesión para acceder al panel de vendedores
+              </Text>
             </Box>
 
-            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+            <form onSubmit={handleSubmit} style={{ width: "100%" }}>
               <VStack spacing={4}>
                 <Input
                   type="email"
@@ -68,7 +99,7 @@ function Login() {
                   size="lg"
                   width="100%"
                   isLoading={cargando}
-                  _hover={{ transform: 'scale(1.02)' }}
+                  _hover={{ transform: "scale(1.02)" }}
                   transition="all 0.2s"
                 >
                   Iniciar Sesión
