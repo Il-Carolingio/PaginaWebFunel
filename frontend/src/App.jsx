@@ -8,6 +8,7 @@ import Funnel from './pages/Funnel';
 import Catalogo from './pages/Catalogo';
 import Reclutamiento from './pages/Reclutamiento';
 import Crm from './pages/Crm';
+import RegistroVendedor from './pages/RegistroVendedor';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
                 <Route path="/catalogo" element={<Catalogo />} />
                 <Route path="/reclutamiento" element={<Reclutamiento />} />
                 <Route path="/crm" element={<Crm />} />
+                <Route path="/registro-vendedor" element={<RegistroVendedor />} />
               </Routes>
             </Container>
           </Box>

@@ -1,5 +1,6 @@
 import express from 'express';
 import { registrar, obtenerTodos, obtenerPorId, actualizarStatus, eliminar, obtenerTareasLlamada, marcarTareaGenerada, enviarCorreoRegistro } from '../controllers/ReclutamientoController.js';
+import { completarRegistro, validarToken } from '../controllers/RegistroVendedorController.js';
 
 const router = express.Router();
 
@@ -26,5 +27,11 @@ router.delete('/:id', eliminar);
 
 // POST /api/reclutamiento/enviar-correo/:id - Enviar correo de registro (admin)
 router.post('/enviar-correo/:id', enviarCorreoRegistro);
+
+// POST /api/reclutamiento/completar-registro - Completar registro con token (público)
+router.post('/completar-registro', completarRegistro);
+
+// GET /api/reclutamiento/validar-token - Validar token de registro (público)
+router.get('/validar-token', validarToken);
 
 export default router;
