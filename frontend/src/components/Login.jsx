@@ -67,7 +67,7 @@ function Login() {
                   borderRadius="20%"
                   alt="Casa Pleroma"
                   position="center"
-                  height={{ base: "30px", md: "50px", lg: "150px" }} // Móvil: 30px, Tablet: 50px, Escritorio: 60px
+                  height={{ base: "150px", md: "150px", lg: "150px" }} // Móvil: 30px, Tablet: 50px, Escritorio: 60px
                   width="auto"
                   objectFit="contain"
                   _hover={{ opacity: 0.8 }}
@@ -111,9 +111,16 @@ function Login() {
               </VStack>
             </form>
 
-            <Text fontSize="sm" color="gray.500" textAlign="center">
-              ¿Problemas para acceder? Contacta al administrador
-            </Text>
+            <VStack spacing={2}>
+              <Link as={RouterLink} to="/solicitar-reset">
+                <Text fontSize="sm" color="blue.500" _hover={{ textDecoration: 'underline' }}>
+                  ¿Olvidaste tu contraseña?
+                </Text>
+              </Link>
+              <Text fontSize="sm" color="gray.500">
+                ¿Problemas para acceder? Contacta al administrador
+              </Text>
+            </VStack>
           </VStack>
         </Box>
       </Container>

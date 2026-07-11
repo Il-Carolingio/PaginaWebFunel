@@ -9,6 +9,8 @@ import Catalogo from './pages/Catalogo';
 import Reclutamiento from './pages/Reclutamiento';
 import Crm from './pages/Crm';
 import RegistroVendedor from './pages/RegistroVendedor';
+import SolicitarReset from './pages/SolicitarReset';
+import ResetearPassword from './pages/ResetearPassword';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
                 <Route path="/reclutamiento" element={<Reclutamiento />} />
                 <Route path="/crm" element={<Crm />} />
                 <Route path="/registro-vendedor" element={<RegistroVendedor />} />
+                <Route path="/solicitar-reset" element={<SolicitarReset />} />
+                <Route path="/resetear-password/:token" element={<ResetearPassword />} />
               </Routes>
             </Container>
           </Box>
