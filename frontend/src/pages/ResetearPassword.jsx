@@ -8,6 +8,9 @@ import {
   FormControl,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
+  IconButton,
   VStack,
   Text,
   useToast,
@@ -15,12 +18,15 @@ import {
   Alert,
   AlertIcon
 } from '@chakra-ui/react';
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { validarTokenReset, resetearPassword } from '../services/authService';
 
 const ResetearPassword = () => {
   const { token } = useParams();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tokenValido, setTokenValido] = useState(null);
   const [email, setEmail] = useState('');
@@ -138,24 +144,48 @@ const ResetearPassword = () => {
         <VStack spacing={4}>
           <FormControl isRequired>
             <FormLabel>Nueva Contraseña</FormLabel>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
-              minLength={6}
-            />
+            <InputGroup>
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                minLength={6}
+                pr="4.5rem"
+              />
+              <InputRightElement>
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                />
+              </InputRightElement>
+            </InputGroup>
           </FormControl>
 
           <FormControl isRequired>
             <FormLabel>Confirmar Contraseña</FormLabel>
-            <Input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repite tu contraseña"
-              minLength={6}
-            />
+            <InputGroup>
+              <Input
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repite tu contraseña"
+                minLength={6}
+                pr="4.5rem"
+              />
+              <InputRightElement>
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  icon={showConfirmPassword ? <ViewOffIcon /> : <ViewIcon />}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                />
+              </InputRightElement>
+            </InputGroup>
           </FormControl>
 
           <Alert status="info" borderRadius="md">
