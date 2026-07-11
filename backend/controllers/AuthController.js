@@ -205,7 +205,13 @@ export const solicitarReset = async (req, res) => {
 
     await passwordReset.save();
 
-    // Enviar correo con enlace de reset
+    // Responder inmediatamente al usuario
+    res.json({
+      success: true,
+      message: 'Si el email existe, recibirás un enlace de recuperación.'
+    });
+
+    // Enviar correo de forma asíncrona (no bloquear la respuesta)
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const enlaceReset = `${frontendUrl}/resetear-password/${token}`;
 
@@ -252,15 +258,13 @@ export const solicitarReset = async (req, res) => {
       </html>
     `;
 
-    await enviarCorreo({
+    // Envío asíncrono - no esperar respuesta
+    enviarCorreo({
       to: usuario.email,
       subject: 'Recuperación de Contraseña - Royal Prestige',
       html
-    });
-
-    res.json({
-      success: true,
-      message: 'Si el email existe, recibirás un enlace de recuperación.'
+    }).catch(error => {
+      console.error('[solicitarReset] Error enviando correo (asíncrono):', error.message);
     });
   } catch (error) {
     console.error('Error al solicitar reset de contraseña:', error);
@@ -366,7 +370,13 @@ export const resetearPassword = async (req, res) => {
     passwordReset.usado = true;
     await passwordReset.save();
 
-    // Enviar correo de confirmación
+    // Responder inmediatamente al usuario
+    res.json({
+      success: true,
+      message: 'Contraseña actualizada exitosamente'
+    });
+
+    // Enviar correo de confirmación de forma asíncrona
     const html = `
       <!DOCTYPE html>
       <html>
@@ -398,15 +408,13 @@ export const resetearPassword = async (req, res) => {
       </html>
     `;
 
-    await enviarCorreo({
+    // Envío asíncrono - no esperar respuesta
+    enviarCorreo({
       to: usuario.email,
       subject: 'Contraseña Actualizada - Royal Prestige',
       html
-    });
-
-    res.json({
-      success: true,
-      message: 'Contraseña actualizada exitosamente'
+    }).catch(error => {
+      console.error('[resetearPassword] Error enviando correo (asíncrono):', error.message);
     });
   } catch (error) {
     console.error('Error al resetear contraseña:', error);
