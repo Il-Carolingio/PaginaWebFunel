@@ -78,9 +78,9 @@ const ResetearPassword = () => {
         duration: 5000,
         isClosable: true
       });
-      // Redirigir al login después de 2 segundos
+      // Redirigir al login del CRM después de 2 segundos
       setTimeout(() => {
-        window.location.href = '/login';
+        window.location.href = '/crm';
       }, 2000);
     } catch (error) {
       toast({
@@ -175,7 +175,7 @@ const ResetearPassword = () => {
             Actualizar Contraseña
           </Button>
 
-          <Link to="/login" style={{ width: '100%' }}>
+          <Link to="/crm" style={{ width: '100%' }}>
             <Button variant="ghost" width="full">
               Cancelar
             </Button>

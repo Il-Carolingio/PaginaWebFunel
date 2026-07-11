@@ -59,7 +59,7 @@ const SolicitarReset = () => {
           <Text mb={6} color="gray.600">
             Por favor revisa tu bandeja de entrada y spam.
           </Text>
-          <Link to="/login">
+          <Link to="/crm">
             <Button colorScheme="blue">Volver al Login</Button>
           </Link>
         </Box>
@@ -98,7 +98,7 @@ const SolicitarReset = () => {
             Enviar Enlace de Recuperación
           </Button>
 
-          <Link to="/login" style={{ width: '100%' }}>
+          <Link to="/crm" style={{ width: '100%' }}>
             <Button variant="ghost" width="full">
               Cancelar
             </Button>
