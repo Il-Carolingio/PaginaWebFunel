@@ -75,7 +75,7 @@ function Reclutamiento() {
 
   return (
     <Box 
-      bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" 
+      bg="whitesmoke" 
       minH="100vh" 
       py={12}
       px={4}
@@ -94,7 +94,7 @@ function Reclutamiento() {
             textAlign="center"
           >
             <Heading as="h1" size="2xl" color="white" mb={2}>
-              🤝 Únete al Equipo Royal Prestige
+              🤝 Únete al Equipo Casa Pleroma
             </Heading>
             <Text fontSize="lg" color="white">
               ¿Quieres ser parte de nuestro equipo de ventas? ¡Regístrate ahora!
