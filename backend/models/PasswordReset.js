@@ -26,8 +26,6 @@ const passwordResetSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Índice para búsquedas rápidas por token
-passwordResetSchema.index({ token: 1 });
 // Índice para búsquedas por email
 passwordResetSchema.index({ email: 1 });
 // Índice para limpiar tokens expirados
