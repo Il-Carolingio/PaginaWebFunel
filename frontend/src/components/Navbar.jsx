@@ -118,7 +118,7 @@ function Navbar() {
           onClick={onToggle}
           icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
           variant="ghost"
-          color="white"
+          color="rgba(120,0,0,0.1)"
           _hover={{ bg: "rgba(120,0,0,0.1)" }}
           aria-label="Toggle Navigation"
         />
@@ -141,7 +141,7 @@ function Navbar() {
               to={link.path}
               onClick={onToggle}
               fontWeight={isActive(link.path) ? "bold" : "medium"}
-              color={isActive(link.path) ? "rgba(97, 136, 177, 0.8)" : "rgba(255,255,255,0.85)"}
+              color={isActive(link.path) ? "rgba(97, 136, 177, 0.8)" : "rgba(97, 136, 177, 0.8)"}
               _hover={{
                 textDecoration: "none",
                 color: "red",

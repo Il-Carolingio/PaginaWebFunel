@@ -222,7 +222,7 @@ export const solicitarReset = async (req, res) => {
       <body style="margin:0; padding:20px; font-family:Arial, sans-serif; background-color:#f4f4f4;">
         <div style="max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <div style="background-color:#2B6CB0; color:white; padding:20px; text-align:center;">
-            <h2 style="margin:0;">Royal Prestige</h2>
+            <h2 style="margin:0;">Casa Pleroma</h2>
             <p style="margin:5px 0 0; font-size:14px; opacity:0.9;">Recuperación de Contraseña</p>
           </div>
           <div style="padding:20px;">
@@ -261,7 +261,7 @@ export const solicitarReset = async (req, res) => {
     // Envío asíncrono - no esperar respuesta
     enviarCorreo({
       to: usuario.email,
-      subject: 'Recuperación de Contraseña - Royal Prestige',
+      subject: 'Recuperación de Contraseña - Casa Pleroma',
       html
     }).catch(error => {
       console.error('[solicitarReset] Error enviando correo (asíncrono):', error.message);
@@ -384,7 +384,7 @@ export const resetearPassword = async (req, res) => {
       <body style="margin:0; padding:20px; font-family:Arial, sans-serif; background-color:#f4f4f4;">
         <div style="max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <div style="background-color:#2B6CB0; color:white; padding:20px; text-align:center;">
-            <h2 style="margin:0;">Royal Prestige</h2>
+            <h2 style="margin:0;">Casa Pleroma</h2>
             <p style="margin:5px 0 0; font-size:14px; opacity:0.9;">Contraseña Actualizada</p>
           </div>
           <div style="padding:20px;">
@@ -411,7 +411,7 @@ export const resetearPassword = async (req, res) => {
     // Envío asíncrono - no esperar respuesta
     enviarCorreo({
       to: usuario.email,
-      subject: 'Contraseña Actualizada - Royal Prestige',
+      subject: 'Contraseña Actualizada - Casa Pleroma',
       html
     }).catch(error => {
       console.error('[resetearPassword] Error enviando correo (asíncrono):', error.message);
