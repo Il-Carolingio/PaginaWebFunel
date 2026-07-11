@@ -5,18 +5,23 @@ import {
   Heading,
   Text,
   Input,
+  InputGroup,
+  InputRightElement,
   Button,
   VStack,
   useToast,
   Container,
   Image,
-  Link
+  Link,
+  IconButton
 } from "@chakra-ui/react";
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [cargando, setCargando] = useState(false);
   const { login } = useAuth();
   const toast = useToast();
@@ -67,7 +72,7 @@ function Login() {
                   borderRadius="20%"
                   alt="Casa Pleroma"
                   position="center"
-                  height={{ base: "150px", md: "150px", lg: "150px" }} // Móvil: 30px, Tablet: 50px, Escritorio: 60px
+                  height={{ base: "150px", md: "150px", lg: "150px" }}
                   width="auto"
                   objectFit="contain"
                   _hover={{ opacity: 0.8 }}
@@ -89,14 +94,25 @@ function Login() {
                   required
                   size="lg"
                 />
-                <Input
-                  type="password"
-                  placeholder="Contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  size="lg"
-                />
+                <InputGroup size="lg">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    pr="4.5rem"
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      variant="ghost"
+                      size="sm"
+                      icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    />
+                  </InputRightElement>
+                </InputGroup>
                 <Button
                   type="submit"
                   colorScheme="orange"

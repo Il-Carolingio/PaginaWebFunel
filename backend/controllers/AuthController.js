@@ -358,9 +358,8 @@ export const resetearPassword = async (req, res) => {
       });
     }
 
-    // Hashear nueva contraseña
-    const salt = await bcrypt.genSalt(10);
-    usuario.password = await bcrypt.hash(password, salt);
+    // Asignar la contraseña en texto plano - el pre('save') del modelo la hasheará automáticamente
+    usuario.password = password;
     await usuario.save();
 
     // Marcar token como usado
@@ -454,6 +453,7 @@ export const cambiarPassword = async (req, res) => {
       });
     }
 
+    // Asignar la contraseña en texto plano - el pre('save') del modelo la hasheará automáticamente
     usuario.password = passwordNuevo;
     await usuario.save();
 
