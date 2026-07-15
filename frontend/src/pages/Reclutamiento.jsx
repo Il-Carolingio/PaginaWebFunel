@@ -45,7 +45,7 @@ function Reclutamiento() {
     setIsSubmitting(true);
     
     try {
-      const response = await api.post('/api/reclutamiento/registro', data);
+      const response = await api.post('/reclutamiento/registro', data);
       
       if (response.data) {
         toast({
