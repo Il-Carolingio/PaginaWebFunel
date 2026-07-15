@@ -1,0 +1,32 @@
+# Configuración de Koyeb para monorepo
+name: royal-prestige-backend
+service:
+  name: backend
+  port: 5000
+  
+  # Directorio raíz del backend en el monorepo
+  workdir: backend
+  
+  # Comando para instalar dependencias
+  install:
+    - pnpm install --prod
+  
+  # Comando para iniciar el servidor
+  command: pnpm start
+  
+  # Variables de entorno (se pueden configurar desde el panel de Koyeb)
+  env:
+    - key: NODE_ENV
+      value: production
+    - key: PORT
+      value: "5000"
+
+  # Health check
+  health:
+    path: /api/health
+    initialDelay: 10s
+
+  # Escalado
+  scaling:
+    min: 1
+    max: 1
