@@ -321,7 +321,7 @@ export const enviarCorreoRegistro = async (req, res) => {
             <p style="margin:5px 0 0; font-size:14px; opacity:0.9;">Invitación a Registro de Vendedor</p>
           </div>
           <div style="padding:20px;">
-            <h3 style="color:#2B6CB0; margin-top:0;">¡Bienvenido a Royal Prestige!</h3>
+            <h3 style="color:#2B6CB0; margin-top:0;">¡Bienvenido a Casa Pleroma!</h3>
             <p style="font-size:16px; color:#333;">
               Hola <strong>${nombre || registro.nombre}</strong>,
             </p>
