@@ -25,12 +25,12 @@ import api from '../services/api.js';
 
 // Esquema de validación con Yup
 const schema = yup.object().shape({
-  nombre: yup.string().required('El nombre es requerido').min(3, 'Mínimo 3 caracteres'),
-  telefono: yup.string().required('El teléfono es requerido').matches(/^[0-9]{10}$/, 'Debe tener 10 dígitos'),
-  email: yup.string().required('El correo es requerido').email('Correo inválido'),
-  experiencia: yup.string().required('Selecciona una opción'),
-  disponibilidad: yup.string().required('Selecciona una opción'),
-  motivacion: yup.string().max(500, 'Máximo 500 caracteres'),
+  nombre: yup.string().required('El nombre completo es obligatorio').min(3, 'Ingresa al menos 3 caracteres (ej: Juan Pérez)'),
+  telefono: yup.string().required('El teléfono es obligatorio').matches(/^[0-9]{10}$/, 'Ingresa 10 dígitos sin espacios ni guiones (ej: 5512345678)'),
+  email: yup.string().required('El correo electrónico es obligatorio').email('Ingresa un correo válido (ej: nombre@dominio.com)'),
+  experiencia: yup.string().required('Selecciona si tienes experiencia en ventas'),
+  disponibilidad: yup.string().required('Selecciona tu disponibilidad de horario'),
+  motivacion: yup.string().max(500, 'La motivación no puede exceder 500 caracteres'),
 });
 
 function Reclutamiento() {
