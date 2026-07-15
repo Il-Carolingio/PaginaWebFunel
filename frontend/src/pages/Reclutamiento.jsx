@@ -20,6 +20,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { MdCheckCircle } from 'react-icons/md';
+import { motion } from 'framer-motion';
 import api from '../services/api.js';
 
 // Esquema de validación con Yup
@@ -217,14 +218,27 @@ function Reclutamiento() {
                   colorScheme="orange"
                   size="lg"
                   width="full"
-                  isLoading={isSubmitting}
-                  loadingText="Enviando..."
+                  isDisabled={isSubmitting}
                   _hover={{ transform: 'scale(1.02)' }}
                   transition="all 0.2s"
                   boxShadow="0 4px 20px rgba(237, 137, 54, 0.4)"
                 >
-                  <MdCheckCircle style={{ marginRight: '8px' }} />
-                  Enviar Registro
+                  {isSubmitting ? (
+                    <HStack spacing={2}>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        <MdCheckCircle size={24} />
+                      </motion.div>
+                      <Text>Enviando...</Text>
+                    </HStack>
+                  ) : (
+                    <HStack spacing={2}>
+                      <MdCheckCircle size={24} />
+                      <Text>Enviar Registro</Text>
+                    </HStack>
+                  )}
                 </Button>
 
                 <Text fontSize="sm" color="gray.500" textAlign="center">
