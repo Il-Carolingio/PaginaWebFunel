@@ -317,7 +317,7 @@ export const enviarCorreoRegistro = async (req, res) => {
       <body style="margin:0; padding:20px; font-family:Arial, sans-serif; background-color:#f4f4f4;">
         <div style="max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <div style="background-color:#2B6CB0; color:white; padding:20px; text-align:center;">
-            <h2 style="margin:0;">Royal Prestige</h2>
+            <h2 style="margin:0;">Casa Pleroma</h2>
             <p style="margin:5px 0 0; font-size:14px; opacity:0.9;">Invitación a Registro de Vendedor</p>
           </div>
           <div style="padding:20px;">
@@ -356,7 +356,7 @@ export const enviarCorreoRegistro = async (req, res) => {
 
     await enviarCorreo({
       to: registro.email,
-      subject: '¡Bienvenido a Royal Prestige! Completa tu registro',
+      subject: '¡Bienvenido a Casa Pleroma! Completa tu registro',
       html
     });
 
