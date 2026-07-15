@@ -2,7 +2,7 @@
 [build]
   base = "frontend"
   publish = "dist"
-  command = "npm run build"
+  command = "npm install --legacy-peer-deps && npm run build"
 
 # Redirect para SPA (React Router)
 [[redirects]]
