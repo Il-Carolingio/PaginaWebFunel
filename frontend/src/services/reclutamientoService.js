@@ -82,7 +82,7 @@ export const enviarCorreoRegistro = async (id, datos) => {
 export const validarTokenRegistro = async (token) => {
   try {
     console.log('🔑 Validando token:', token);
-    const response = await api.get(`/api/reclutamiento/validar-token`, {
+    const response = await api.get(`/reclutamiento/validar-token`, {
       params: { token }
     });
     console.log('✅ Respuesta de validación:', response.data);
