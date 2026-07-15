@@ -1,0 +1,39 @@
+# Configuración de Render para monorepo con backend
+services:
+  - type: web
+    name: royal-prestige-backend
+    runtime: node
+    repo: https://github.com/Il-Carolingio/PaginaWebFunel
+    branch: develop
+    
+    # ⚠️ CLAVE: Directorio raíz del backend en el monorepo
+    rootDir: backend
+    
+    buildCommand: npm install
+    startCommand: node server.js
+    
+    healthCheckPath: /api/health
+    
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_TO
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
