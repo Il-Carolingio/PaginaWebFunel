@@ -109,8 +109,8 @@ function Crm() {
     try {
       const token = localStorage.getItem('token');
       
-   // Cargar tareas (el backend ya devuelve todas para administradores)
-   const resTareas = await fetch('http://localhost:5000/api/tareas', {
+   // Cargar tareas (el backend ya devuelve todas para administradores) usar la variable de entorno para la URL base
+   const resTareas = await fetch(`${process.env.VITE_API_URL}/tareas`, {
      headers: { 'Authorization': `Bearer ${token}` }
    });
    const dataTareas = await resTareas.json();

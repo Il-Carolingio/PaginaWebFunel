@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Box, Container, Heading, Text, VStack, FormControl, FormLabel, Input, Select, Button, Alert, AlertIcon, AlertDescription, useToast, Spinner, Center } from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom'; // ✅ Importa RouterLink
+import { Box, Container, Heading, Text, VStack, FormControl, 
+  FormLabel, Input, Select, Button, Alert, AlertIcon, AlertDescription, 
+  useToast, Spinner, Center, Image, Link } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -176,10 +179,28 @@ function RegistroVendedor() {
       <Container maxW="md">
         <Box bg="white" p={8} borderRadius="xl" boxShadow="2xl">
           <VStack spacing={6}>
-            <Box textAlign="center">
-              <Heading as="h1" size="xl" color="orange.500" mb={2}>
-                Royal Prestige
-              </Heading>
+            <Box textAlign="center" width="100%">
+              {/* ✅ Logo con enlace corregido */}
+              <Link 
+                as={RouterLink} 
+                to="/" 
+                display="flex" 
+                alignItems="center" 
+                justifyContent="center"
+                mb={4}
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                <Image
+                  src="/homeImages/FullLogo_Transparent.png"
+                  borderRadius="full" // ✅ Cambié a "full" para que sea redondo
+                  alt="Casa Pleroma"
+                  height={{ base: "120px", md: "150px", lg: "150px" }}
+                  width="auto"
+                  objectFit="contain"
+                  _hover={{ opacity: 0.8, transform: 'scale(1.05)' }}
+                  transition="all 0.2s"
+                />
+              </Link>
               <Text color="gray.600" fontSize="lg">
                 Completa tu Registro
               </Text>
@@ -188,7 +209,7 @@ function RegistroVendedor() {
             <Alert status="info" borderRadius="md">
               <AlertIcon />
               <AlertDescription fontSize="sm">
-                Bienvenido/a <strong>{datosCandidato?.nombre}</strong>. Completa el formulario para crear tu cuenta.
+                Bienvenido/a <strong>{datosCandidato?.nombre || 'usuario'}</strong>. Completa el formulario para crear tu cuenta.
               </AlertDescription>
             </Alert>
 
@@ -198,7 +219,7 @@ function RegistroVendedor() {
                   <FormLabel>Nombre completo</FormLabel>
                   <Input
                     {...registerForm('nombre')}
-                    defaultValue={datosCandidato?.nombre}
+                    defaultValue={datosCandidato?.nombre || ''}
                     placeholder="Tu nombre completo"
                     size="lg"
                   />
@@ -209,11 +230,11 @@ function RegistroVendedor() {
                   )}
                 </FormControl>
 
-                <FormControl isRequired isInvalid={errorsForm.email}>
+                <FormControl>
                   <FormLabel>Correo electrónico</FormLabel>
                   <Input
                     type="email"
-                    value={datosCandidato?.email}
+                    value={datosCandidato?.email || ''}
                     isReadOnly
                     bg="gray.100"
                     size="lg"
@@ -227,7 +248,7 @@ function RegistroVendedor() {
                   <FormLabel>Teléfono</FormLabel>
                   <Input
                     {...registerForm('telefono')}
-                    defaultValue={datosCandidato?.telefono}
+                    defaultValue={datosCandidato?.telefono || ''}
                     placeholder="Ej: 4421234567"
                     size="lg"
                   />
