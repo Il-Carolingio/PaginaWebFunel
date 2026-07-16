@@ -12,6 +12,11 @@ import {
   VStack,
   HStack,
   Icon,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
@@ -28,6 +33,9 @@ const MotionHeading = motion(Heading);
 const MotionText = motion(Text);
 
 function Home() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedImage, setSelectedImage] = useState(null);
+  
   const heroSlides = [
     {
       type: 'video',
@@ -427,9 +435,14 @@ function Home() {
                     boxShadow="lg"
                     _hover={{ transform: 'translateY(-8px)', boxShadow: 'xl' }}
                     transition="all 0.3s"
+                    cursor="pointer"
+                    onClick={() => {
+                      setSelectedImage('/homeImages/SartenesEasyRelease.png');
+                      onOpen();
+                    }}
                   >
                     <Image
-                      src="../../public/homeImages/SartenesEasyRelease.png"
+                      src="/homeImages/SartenesEasyRelease.png"
                       alt="Sartenes Royal Prestige"
                       w="100%"
                       h="250px"
@@ -456,9 +469,14 @@ function Home() {
                     boxShadow="lg"
                     _hover={{ transform: 'translateY(-8px)', boxShadow: 'xl' }}
                     transition="all 0.3s"
+                    cursor="pointer"
+                    onClick={() => {
+                      setSelectedImage('/homeImages/Ollas-Presion-Lux.png');
+                      onOpen();
+                    }}
                   >
                     <Image
-                      src="https://images.unsplash.com/photo-1584982751601-97d9301a41b6?w=400&h=300&fit=crop"
+                      src="/homeImages/Ollas-Presion-Lux.png"
                       alt="Olla a presión"
                       w="100%"
                       h="250px"
@@ -485,9 +503,14 @@ function Home() {
                     boxShadow="lg"
                     _hover={{ transform: 'translateY(-8px)', boxShadow: 'xl' }}
                     transition="all 0.3s"
+                    cursor="pointer"
+                    onClick={() => {
+                      setSelectedImage('/homeImages/AccesoriosPremium.png');
+                      onOpen();
+                    }}
                   >
                     <Image
-                      src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=300&fit=crop"
+                      src="/homeImages/AccesoriosPremium.png"
                       alt="Accesorios de cocina"
                       w="100%"
                       h="250px"
@@ -519,19 +542,23 @@ function Home() {
                 gap={10}
                 alignItems="center"
               >
+                <Box as={RouterLink} to="/catalogo" _hover={{ textDecoration: 'none' }}>
                 <Image
-                  src="https://images.unsplash.com/photo-1507100115567-cc5400161f65?w=500&h=400&fit=crop"
+                  src="/homeImages/CocinaProfesional.png"
                   alt="Cocina profesional"
+                  w="100%"
+                  h="auto"
                   borderRadius="lg"
-                  boxShadow="lg"
+                  objectFit="cover"
                 />
+                </Box>
                 <VStack align="flex-start" spacing={6}>
-                  <Heading as="h2" size="xl">
+                  <Heading as="h2" size="xl" color="orange.600">
                     ¿Por qué elegir Royal Prestige?
                   </Heading>
                   <HStack spacing={4}>
                     <Box
-                      bg="blue.600"
+                      bg="orange.600"
                       color="white"
                       w="12"
                       h="12"
@@ -545,7 +572,7 @@ function Home() {
                       ✓
                     </Box>
                     <VStack align="flex-start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="lg">
+                      <Text fontWeight="bold" fontSize="lg" color="orange.600">
                         65+ años de experiencia
                       </Text>
                       <Text color="gray.600">Tradición y confianza en cada producto</Text>
@@ -568,7 +595,7 @@ function Home() {
                       ✓
                     </Box>
                     <VStack align="flex-start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="lg">
+                      <Text fontWeight="bold" fontSize="lg" color="orange.600">
                         50 años de garantía
                       </Text>
                       <Text color="gray.600">Respaldamos nuestros productos</Text>
@@ -577,7 +604,7 @@ function Home() {
 
                   <HStack spacing={4}>
                     <Box
-                      bg="blue.600"
+                      bg="orange.600"
                       color="white"
                       w="12"
                       h="12"
@@ -591,7 +618,7 @@ function Home() {
                       ✓
                     </Box>
                     <VStack align="flex-start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="lg">
+                      <Text fontWeight="bold" fontSize="lg" color="orange.600">
                         Tecnología patentada
                       </Text>
                       <Text color="gray.600">Sistema de distribución de calor revolucionario</Text>
@@ -600,7 +627,7 @@ function Home() {
 
                   <HStack spacing={4}>
                     <Box
-                      bg="blue.600"
+                      bg="orange.600"
                       color="white"
                       w="12"
                       h="12"
@@ -614,7 +641,7 @@ function Home() {
                       ✓
                     </Box>
                     <VStack align="flex-start" spacing={0}>
-                      <Text fontWeight="bold" fontSize="lg">
+                      <Text fontWeight="bold" fontSize="lg" color="orange.600">
                         Sostenible y ético
                       </Text>
                       <Text color="gray.600">Compromiso con el medio ambiente</Text>
@@ -624,6 +651,22 @@ function Home() {
               </Grid>
             </Container>
           </Box>
+
+          {/* Modal de ampliación de imágenes */}
+          <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
+            <ModalOverlay />
+            <ModalContent maxW="90vw" maxH="90vh" p={0}>
+              <ModalCloseButton />
+              <Image
+                src={selectedImage}
+                alt="Imagen ampliada"
+                w="100%"
+                h="auto"
+                objectFit="contain"
+                borderRadius="md"
+              />
+            </ModalContent>
+          </Modal>
 
           {/* CTA Final */}
           <Box bg="rgba(255, 255, 255, 0.92)" py={12} backdropFilter="blur(10px)">

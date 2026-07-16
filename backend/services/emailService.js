@@ -1,6 +1,193 @@
 // backend/services/emailService.js
-// Servicio de envío de correos electrónicos usando Nodemailer
+// Servicio de envío de correos electrónicos
+// Soporta Brevo (API), Gmail (SMTP con IPv4) y SendGrid como fallback
 import nodemailer from 'nodemailer';
+import { TransactionalEmailsApi, SendSmtpEmail, ApiClient } from 'brevo';
+
+// ============================================================
+// 1. CONFIGURACIÓN DE BREVO (PROVEEDOR PRINCIPAL)
+// ============================================================
+
+/**
+ * Crea el cliente de Brevo para enviar correos vía API
+ * @returns {Object} - Cliente de Brevo configurado
+ */
+const crearClienteBrevo = () => {
+  if (!process.env.BREVO_API_KEY) {
+    throw new Error('BREVO_API_KEY no configurado en variables de entorno');
+  }
+
+  // Configurar el cliente de Brevo
+  const apiClient = new ApiClient();
+  apiClient.setApiKey(
+    ApiClient.ApiKeys.apiKey,
+    process.env.BREVO_API_KEY
+  );
+  
+  return new TransactionalEmailsApi(apiClient);
+};
+
+/**
+ * Envía correo usando la API de Brevo
+ * @param {Object} opciones - Opciones de envío
+ * @param {string} opciones.to - Destinatario(s)
+ * @param {string} opciones.subject - Asunto
+ * @param {string} opciones.html - Cuerpo HTML
+ * @returns {Promise<Object>} - Resultado del envío
+ */
+const enviarCorreoBrevo = async ({ to, subject, html }) => {
+  try {
+    console.log('[emailService] Intentando enviar con Brevo API...');
+    
+    const apiInstance = crearClienteBrevo();
+    const sendSmtpEmail = new SendSmtpEmail();
+    
+    // Configurar remitente (debe estar verificado en Brevo)
+    sendSmtpEmail.sender = {
+      name: 'Royal Prestige',
+      email: process.env.EMAIL_FROM || process.env.SMTP_USER
+    };
+    
+    // Configurar destinatario(s)
+    const destinatarios = Array.isArray(to) 
+      ? to.map(email => ({ email }))
+      : [{ email: to }];
+    sendSmtpEmail.to = destinatarios;
+    
+    // Configurar contenido
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = html;
+    sendSmtpEmail.textContent = html.replace(/<[^>]*>/g, ''); // Versión texto plano
+    
+    // Configurar opciones adicionales
+    sendSmtpEmail.headers = {
+      'X-Entity-Ref-ID': `royal-prestige-${Date.now()}`
+    };
+    
+    // Enviar correo
+    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+    
+    console.log(`[emailService] ✅ Correo enviado con Brevo: ${response.messageId}`);
+    return {
+      success: true,
+      messageId: response.messageId || 'brevo',
+      provider: 'brevo',
+      attempts: 1
+    };
+  } catch (error) {
+    console.error('[emailService] ❌ Error con Brevo:', error.message);
+    if (error.response) {
+      console.error('[emailService] Detalles:', error.response.body);
+    }
+    throw error;
+  }
+};
+
+// ============================================================
+// 2. CONFIGURACIÓN DE GMAIL CON IPv4 FORZADO (FALLBACK 1)
+// ============================================================
+
+/**
+ * Crea el transporter SMTP con IPv4 forzado para Gmail
+ * @returns {Object} - Transporter de nodemailer
+ */
+const crearTransporterGmailIPv4 = () => {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465, // Usar puerto 465 (SSL) - más confiable
+    secure: true, // SSL obligatorio
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    // 🔑 CLAVE: Forzar IPv4 explícitamente
+    family: 4,
+    // Configuración de TLS para Gmail
+    tls: {
+      rejectUnauthorized: false,
+    },
+    // Timeouts mejorados
+    connectionTimeout: 15000,
+    socketTimeout: 15000,
+  });
+};
+
+/**
+ * Envía correo usando Gmail (SMTP con IPv4)
+ * @param {Object} opciones - Opciones de envío
+ * @returns {Promise<Object>} - Resultado del envío
+ */
+const enviarCorreoGmail = async ({ to, subject, html }) => {
+  try {
+    console.log('[emailService] Intentando enviar con Gmail (IPv4 forzado)...');
+    
+    const transporter = crearTransporterGmailIPv4();
+    const mailOptions = {
+      from: `"Casa Pleroma" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
+      to,
+      subject,
+      html,
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[emailService] ✅ Correo enviado con Gmail: ${info.messageId}`);
+    
+    return {
+      success: true,
+      messageId: info.messageId,
+      provider: 'gmail',
+      attempts: 1
+    };
+  } catch (error) {
+    console.error('[emailService] ❌ Error con Gmail:', error.message);
+    throw error;
+  }
+};
+
+// ============================================================
+// 3. CONFIGURACIÓN DE SENDGRID (FALLBACK 2)
+// ============================================================
+
+/**
+ * Envía correo usando SendGrid como fallback
+ * @param {Object} opciones - Opciones de envío
+ * @returns {Promise<Object>} - Resultado del envío
+ */
+const enviarCorreoSendGrid = async ({ to, subject, html }) => {
+  if (!process.env.SENDGRID_API_KEY) {
+    throw new Error('SENDGRID_API_KEY no configurado');
+  }
+  
+  console.log('[emailService] Intentando enviar con SendGrid (fallback 2)...');
+  
+  const sg = await import('@sendgrid/mail');
+  const msg = {
+    to,
+    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+    subject,
+    html,
+  };
+  
+  const result = await sg.default.send(msg);
+  console.log('[emailService] ✅ Correo enviado con SendGrid');
+  
+  return {
+    success: true,
+    messageId: result[0]?.headers?.['x-message-id'] || 'sendgrid',
+    provider: 'sendgrid',
+    attempts: 1
+  };
+};
+
+// ============================================================
+// 4. FUNCIÓN PRINCIPAL DE ENVÍO CON REINTENTOS Y FALLBACKS
+// ============================================================
+
+/**
+ * Espera un tiempo determinado (para reintentos con backoff)
+ * @param {number} ms - Milisegundos a esperar
+ */
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Sanitiza un valor para evitar inyección HTML en la tabla de reportes
@@ -11,10 +198,10 @@ const sanitizeHtml = (value) => {
   if (value === null || value === undefined) return '';
   const str = String(value);
   const map = {
-    '&': '&',
-    '<': '<',
-    '>': '>',
-    '"': '"',
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
     "'": '&#x27;',
   };
   return str.replace(/[&<>"']/g, (char) => map[char]);
@@ -114,60 +301,82 @@ const generarCuerpoCorreo = (prospectos, fechaEnvio) => {
 };
 
 /**
- * Espera un tiempo determinado (para reintentos con backoff)
- * @param {number} ms - Milisegundos a esperar
- */
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
- * Envía un correo electrónico con reintentos y backoff exponencial
+ * Envía un correo electrónico con reintentos y múltiples fallbacks
  * @param {Object} opciones - Opciones de envío
  * @param {string} opciones.to - Destinatario(s)
  * @param {string} opciones.subject - Asunto
  * @param {string} opciones.html - Cuerpo HTML
- * @param {number} [opciones.maxRetries=3] - Número máximo de reintentos
+ * @param {number} [opciones.maxRetries=2] - Número máximo de reintentos por proveedor
  * @returns {Promise<Object>} - Resultado del envío
  */
-const enviarCorreo = async ({ to, subject, html, maxRetries = 3 }) => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT, 10),
-    secure: process.env.SMTP_PORT === '465',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: `"Royal Prestige" <${process.env.EMAIL_FROM}>`,
-    to,
-    subject,
-    html,
-  };
-
+const enviarCorreo = async ({ to, subject, html, maxRetries = 2 }) => {
   let lastError = null;
 
+  // ============================================================
+  // INTENTO 1: BREVO (PROVEEDOR PRINCIPAL)
+  // ============================================================
   for (let intento = 1; intento <= maxRetries; intento++) {
     try {
-      console.log(`[emailService] Intento ${intento}/${maxRetries} de enviar correo a "${to}"`);
-      const info = await transporter.sendMail(mailOptions);
-      console.log(`[emailService] Correo enviado exitosamente (intento ${intento}): ${info.messageId}`);
-      return { success: true, messageId: info.messageId, intentos: intento };
+      console.log(`[emailService] 🔄 Brevo: Intento ${intento}/${maxRetries} para "${to}"`);
+      const result = await enviarCorreoBrevo({ to, subject, html });
+      return result;
     } catch (error) {
       lastError = error;
-      console.error(`[emailService] Error en intento ${intento}/${maxRetries}: ${error.message}`);
+      console.error(`[emailService] Brevo intento ${intento} falló: ${error.message}`);
       
       if (intento < maxRetries) {
-        const espera = Math.min(1000 * Math.pow(2, intento), 15000); // 2s, 4s, 8s (máx 15s)
+        const espera = Math.min(1000 * Math.pow(2, intento), 8000);
         console.log(`[emailService] Esperando ${espera}ms antes de reintentar...`);
         await delay(espera);
       }
     }
   }
 
-  console.error(`[emailService] Todos los ${maxRetries} intentos fallaron. Error final: ${lastError.message}`);
-  throw new Error(`No se pudo enviar el correo después de ${maxRetries} intentos. Último error: ${lastError.message}`);
+  console.log('[emailService] ⚠️ Brevo falló después de reintentos, pasando a Gmail...');
+
+  // ============================================================
+  // INTENTO 2: GMAIL CON IPv4 FORZADO (FALLBACK 1)
+  // ============================================================
+  for (let intento = 1; intento <= maxRetries; intento++) {
+    try {
+      console.log(`[emailService] 🔄 Gmail: Intento ${intento}/${maxRetries} para "${to}"`);
+      const result = await enviarCorreoGmail({ to, subject, html });
+      return result;
+    } catch (error) {
+      lastError = error;
+      console.error(`[emailService] Gmail intento ${intento} falló: ${error.message}`);
+      
+      if (intento < maxRetries) {
+        const espera = Math.min(1000 * Math.pow(2, intento), 8000);
+        console.log(`[emailService] Esperando ${espera}ms antes de reintentar...`);
+        await delay(espera);
+      }
+    }
+  }
+
+  console.log('[emailService] ⚠️ Gmail falló después de reintentos, pasando a SendGrid...');
+
+  // ============================================================
+  // INTENTO 3: SENDGRID (FALLBACK 2)
+  // ============================================================
+  if (process.env.SENDGRID_API_KEY) {
+    try {
+      console.log(`[emailService] 🔄 SendGrid: Intento final para "${to}"`);
+      const result = await enviarCorreoSendGrid({ to, subject, html });
+      return result;
+    } catch (sgError) {
+      console.error(`[emailService] SendGrid falló: ${sgError.message}`);
+      lastError = sgError;
+    }
+  } else {
+    console.warn('[emailService] SENDGRID_API_KEY no configurado, omitiendo fallback');
+  }
+
+  // ============================================================
+  // TODOS FALLARON
+  // ============================================================
+  console.error(`[emailService] ❌ Todos los proveedores fallaron. Error final: ${lastError?.message || 'Error desconocido'}`);
+  throw new Error(`No se pudo enviar el correo. Último error: ${lastError?.message || 'Error desconocido'}`);
 };
 
 /**
@@ -191,7 +400,7 @@ export const enviarReporteConfianza = async (prospectos) => {
     : `📊 Reporte de Prospectos Confiables - Sin prospectos - ${fechaEnvio}`;
 
   const resultado = await enviarCorreo({
-    to: process.env.EMAIL_TO,
+    to: process.env.EMAIL_TO || process.env.SMTP_USER,
     subject,
     html,
   });
@@ -204,4 +413,12 @@ export const enviarReporteConfianza = async (prospectos) => {
 };
 
 // Funciones exportadas para pruebas unitarias
-export { sanitizeHtml, generarTablaHTML, generarCuerpoCorreo, enviarCorreo };
+export { 
+  sanitizeHtml, 
+  generarTablaHTML, 
+  generarCuerpoCorreo, 
+  enviarCorreo,
+  enviarCorreoBrevo,
+  enviarCorreoGmail,
+  enviarCorreoSendGrid
+};

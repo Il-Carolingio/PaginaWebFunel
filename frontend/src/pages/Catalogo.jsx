@@ -1,6 +1,9 @@
 // frontend/src/pages/Catalogo.jsx
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, Button, Icon } from '@chakra-ui/react';
+import { MdDownload } from 'react-icons/md';
 import multipan from '../assets/images/multiPan.png';
+
+const PDF_URL = '/catalogo/Novel Catalog_DIGITAL.pdf';
 
 function Catalogo() {
   return (
@@ -17,7 +20,7 @@ function Catalogo() {
         bgRepeat="no-repeat"
         bgSize="cover"
         zIndex={0}
-        pointerEvents="none"  // ✅ Permite interactuar con el menú
+        pointerEvents="none"
       />
 
       {/* Contenido con overlay blanco */}
@@ -28,21 +31,50 @@ function Catalogo() {
         mx="auto"
         maxW="1200px"
         zIndex={1}
-        p={8}
+        p={{ base: 2, md: 8 }}
       >
         <Box 
-          bg="rgba(255,255,255,0.92)" 
-          p={10} 
+          bg="rgba(255,255,255,0.95)" 
+          p={{ base: 4, md: 8 }} 
           borderRadius="xl" 
           boxShadow="2xl"
           backdropFilter="blur(10px)"
         >
-          <Heading as="h2" size="lg" mb={4}>
-            📦 Catálogo de productos
-          </Heading>
-          <Text fontSize="md" color="gray.600">
-            Próximamente: precios de lista Royal Prestige
-          </Text>
+          <VStack spacing={6} align="stretch">
+            {/* Encabezado */}
+            <Box textAlign="center">
+              <Heading as="h2" size="lg" mb={2} color="blue.800">
+                📦 Catálogo de Productos
+              </Heading>
+              <Text fontSize="md" color="gray.600" mb={4}>
+                Explora nuestra colección completa de productos Royal Prestige
+              </Text>
+            </Box>
+
+            {/* Visor de PDF */}
+            <Box
+              w="100%"
+              h={{ base: '70vh', md: '85vh' }}
+              borderRadius="lg"
+              overflow="hidden"
+              border="1px solid"
+              borderColor="gray.200"
+              boxShadow="md"
+            >
+              <iframe
+                src={PDF_URL}
+                title="Catálogo Royal Prestige"
+                width="100%"
+                height="100%"
+                style={{ border: 'none' }}
+              />
+            </Box>
+
+            {/* Pie */}
+            <Text fontSize="sm" color="gray.500" textAlign="center">
+              Catálogo digital Royal Prestige - Todos los derechos reservados
+            </Text>
+          </VStack>
         </Box>
       </Box>
     </>
