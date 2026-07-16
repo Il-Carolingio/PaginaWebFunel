@@ -123,7 +123,7 @@ const enviarCorreoGmail = async ({ to, subject, html }) => {
     
     const transporter = crearTransporterGmailIPv4();
     const mailOptions = {
-      from: `"Casa Pleroma" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
+      from: `"Royal Prestige" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
       to,
       subject,
       html,

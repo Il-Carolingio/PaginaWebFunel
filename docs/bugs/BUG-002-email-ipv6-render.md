@@ -15,17 +15,26 @@ El servicio de correo falla al enviar emails desde el servidor de Render debido 
 - **Dirección IPv6:** `2607:f8b0:400e:c02::6c` es una dirección IPv6 de los servidores de Gmail
 - **Error ENETUNREACH:** Indica que la red IPv6 no es accesible desde Render
 - **Node.js por defecto:** Intenta usar IPv6 cuando está disponible
+<<<<<<< HEAD
 - **Render:** Tiene restricciones de red que bloquean ciertas conexiones salientes SMTP
 
 ## ✅ Solución Implementada
 
 ### 1. Configuración SMTP optimizada
+=======
+
+## ✅ Solución Aplicada
+
+>>>>>>> 5996179974acb1fa642678f3fceeddced6870cda
 Se agregaron las siguientes configuraciones al `nodemailer.createTransport()`:
 
 ```javascript
 {
+<<<<<<< HEAD
   port: 465,           // Usar puerto 465 (SSL) en lugar de 587 (TLS)
   secure: true,        // SSL obligatorio
+=======
+>>>>>>> 5996179974acb1fa642678f3fceeddced6870cda
   family: 4,           // Fuerza uso de IPv4
   tls: {
     rejectUnauthorized: false,
@@ -35,6 +44,7 @@ Se agregaron las siguientes configuraciones al `nodemailer.createTransport()`:
 }
 ```
 
+<<<<<<< HEAD
 ### 2. Fallback a SendGrid
 Se agregó soporte para SendGrid como servicio alternativo cuando SMTP falla:
 - Se agregó `@sendgrid/mail` como dependencia
@@ -45,10 +55,16 @@ Se agregó soporte para SendGrid como servicio alternativo cuando SMTP falla:
 - `backend/services/emailService.js` - Configuración del transporter SMTP + fallback SendGrid
 - `backend/package.json` - Agregada dependencia @sendgrid/mail
 - `backend/.env.example` - Documentación de configuración
+=======
+## 📁 Archivos Modificados
+
+- `backend/services/emailService.js` - Configuración del transporter SMTP
+>>>>>>> 5996179974acb1fa642678f3fceeddced6870cda
 
 ## 🔄 Estado
 
 - **Rama:** `bugfix/BUG-002-email-ipv6-render`
+<<<<<<< HEAD
 - **PR:** https://github.com/Il-Carolingio/PaginaWebFunel/pull/5
 - **Estado:** ✅ Mergeada a develop
 
@@ -65,3 +81,6 @@ Se agregó soporte para SendGrid como servicio alternativo cuando SMTP falla:
 3. **Verificar en producción:**
    - Probar envío de correo desde el CRM
    - Revisar logs de Render
+=======
+- **Estado:** Pendiente de deploy y verificación
+>>>>>>> 5996179974acb1fa642678f3fceeddced6870cda
