@@ -1,5 +1,6 @@
 // backend/services/emailService.js
-// Servicio de envío de correos electrónicos usando Nodemailer
+// Servicio de envío de correos electrónicos
+// Soporta Gmail (SMTP) y SendGrid como fallback
 import nodemailer from 'nodemailer';
 
 /**
@@ -120,25 +121,66 @@ const generarCuerpoCorreo = (prospectos, fechaEnvio) => {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Envía un correo electrónico con reintentos y backoff exponencial
- * @param {Object} opciones - Opciones de envío
- * @param {string} opciones.to - Destinatario(s)
- * @param {string} opciones.subject - Asunto
- * @param {string} opciones.html - Cuerpo HTML
- * @param {number} [opciones.maxRetries=3] - Número máximo de reintentos
- * @returns {Promise<Object>} - Resultado del envío
+ * Crea el transporter SMTP con configuración optimizada para Render
+ * @returns {Object} - Transporter de nodemailer
  */
-const enviarCorreo = async ({ to, subject, html, maxRetries = 3 }) => {
-  const transporter = nodemailer.createTransport({
+const crearTransporter = () => {
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT, 10),
-    secure: process.env.SMTP_PORT === '465',
+    port: 465, // Usar puerto 465 (SSL) - más confiable en entornos con IPv6
+    secure: true, // SSL obligatorio en puerto 465
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    // Forzar IPv4 para compatibilidad con Render (no soporta IPv6)
+    family: 4,
+    // Configuración de TLS para Gmail
+    tls: {
+      rejectUnauthorized: false,
+    },
+    // Timeouts para mejorar la conectividad
+    connectionTimeout: 10000,
+    socketTimeout: 10000,
   });
+};
 
+/**
+ * Envía correo usando SendGrid como fallback
+ * @param {Object} opciones - Opciones de envío
+ * @returns {Promise<Object>} - Resultado del envío
+ */
+const enviarCorreoSendGrid = async ({ to, subject, html }) => {
+  if (!process.env.SENDGRID_API_KEY) {
+    throw new Error('SENDGRID_API_KEY no configurado');
+  }
+  
+  const sg = await import('@sendgrid/mail');
+  const msg = {
+    to,
+    from: process.env.EMAIL_FROM,
+    subject,
+    html,
+  };
+  
+  const result = await sg.default.send(msg);
+  return { 
+    success: true, 
+    messageId: result[0]?.headers?.['x-message-id'] || 'sendgrid', 
+    intentos: 1 
+  };
+};
+
+/**
+ * Envía un correo electrónico con reintentos y fallback a SendGrid
+ * @param {Object} opciones - Opciones de envío
+ * @param {string} opciones.to - Destinatario(s)
+ * @param {string} opciones.subject - Asunto
+ * @param {string} opciones.html - Cuerpo HTML
+ * @param {number} [opciones.maxRetries=3] - Número máximo de reintentos SMTP
+ * @returns {Promise<Object>} - Resultado del envío
+ */
+const enviarCorreo = async ({ to, subject, html, maxRetries = 3 }) => {
   const mailOptions = {
     from: `"Royal Prestige" <${process.env.EMAIL_FROM}>`,
     to,
@@ -148,9 +190,11 @@ const enviarCorreo = async ({ to, subject, html, maxRetries = 3 }) => {
 
   let lastError = null;
 
+  // Intentar con SMTP (Gmail) primero
   for (let intento = 1; intento <= maxRetries; intento++) {
     try {
-      console.log(`[emailService] Intento ${intento}/${maxRetries} de enviar correo a "${to}"`);
+      console.log(`[emailService] Intento ${intento}/${maxRetries} de enviar correo a "${to}" (SMTP)`);
+      const transporter = crearTransporter();
       const info = await transporter.sendMail(mailOptions);
       console.log(`[emailService] Correo enviado exitosamente (intento ${intento}): ${info.messageId}`);
       return { success: true, messageId: info.messageId, intentos: intento };
@@ -166,7 +210,20 @@ const enviarCorreo = async ({ to, subject, html, maxRetries = 3 }) => {
     }
   }
 
-  console.error(`[emailService] Todos los ${maxRetries} intentos fallaron. Error final: ${lastError.message}`);
+  // Si SMTP falla, intentar con SendGrid como fallback
+  if (process.env.SENDGRID_API_KEY) {
+    try {
+      console.log(`[emailService] Intentando fallback con SendGrid para "${to}"`);
+      const result = await enviarCorreoSendGrid({ to, subject, html });
+      console.log(`[emailService] Correo enviado exitosamente con SendGrid`);
+      return result;
+    } catch (sgError) {
+      console.error(`[emailService] Error con SendGrid: ${sgError.message}`);
+      lastError = sgError;
+    }
+  }
+
+  console.error(`[emailService] Todos los intentos fallaron. Error final: ${lastError.message}`);
   throw new Error(`No se pudo enviar el correo después de ${maxRetries} intentos. Último error: ${lastError.message}`);
 };
 
