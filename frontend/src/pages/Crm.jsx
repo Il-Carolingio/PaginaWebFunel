@@ -5,14 +5,16 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '../context/AuthContext';
-import { obtenerTareasLlamada } from '../services/reclutamientoService.js';
 import Login from '../components/Login.jsx';
 
+// ✅ Variable de entorno base
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Crm() {
-  const [tareas, setTareas] = useState([]); // lista completa para contadores
-  const [tareasFiltradas, setTareasFiltradas] = useState([]); // lista a mostrar
+  const [tareas, setTareas] = useState([]);
+  const [tareasFiltradas, setTareasFiltradas] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('todas');
-  const [filtroTipo, setFiltroTipo] = useState('todas'); // 'todas', 'propias', 'reclutamiento'
+  const [filtroTipo, setFiltroTipo] = useState('todas');
   const [cargando, setCargando] = useState(true);
   const { usuario, login, logout, actualizarUsuario } = useAuth();
   const toast = useToast();
@@ -43,11 +45,8 @@ function Crm() {
     estado: 'pendiente'
   });
 
-  // Estado para el diálogo de confirmación de eliminación
   const [tareaAEliminar, setTareaAEliminar] = useState(null);
   const [eliminandoTarea, setEliminandoTarea] = useState(false);
-
-  // Estado para conflictos de horario en citas
   const [conflictoCita, setConflictoCita] = useState(null);
   const [conflictoCitaEditar, setConflictoCitaEditar] = useState(null);
 
@@ -57,8 +56,6 @@ function Crm() {
   });
 
   const [loginCargando, setLoginCargando] = useState(false);
-
-  // Estado para edición de perfil
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formPerfil, setFormPerfil] = useState({
     nombre: '',
@@ -74,16 +71,13 @@ function Crm() {
     }
   }, [usuario]);
 
-  // Aplicar filtros cuando cambien tareas o los filtros
   useEffect(() => {
     let resultado = tareas;
     
-    // Filtrar por estado
     if (filtroEstado !== 'todas') {
       resultado = resultado.filter(t => t.estado === filtroEstado);
     }
     
-    // Filtrar por tipo
     if (filtroTipo === 'propias') {
       resultado = resultado.filter(t => t.tipo !== 'reclutamiento');
     } else if (filtroTipo === 'reclutamiento') {
@@ -93,7 +87,6 @@ function Crm() {
     setTareasFiltradas(resultado);
   }, [tareas, filtroEstado, filtroTipo]);
 
-  // Cargar datos del usuario en el formulario cuando se activa el modo edición
   useEffect(() => {
     if (modoEdicion && usuario) {
       setFormPerfil({
@@ -109,24 +102,21 @@ function Crm() {
     try {
       const token = localStorage.getItem('token');
       
-   // Cargar tareas (el backend ya devuelve todas para administradores) usar la variable de entorno para la URL base
-   const resTareas = await fetch(`${process.env.VITE_API_URL}/tareas`, {
-     headers: { 'Authorization': `Bearer ${token}` }
-   });
-   const dataTareas = await resTareas.json();
-   
-   let todasLasTareas = [];
-   
-   if (dataTareas.success) {
-     // Marcar tareas según el rol del usuario
-     const tareasMarcadas = dataTareas.data.map(t => ({
-       ...t,
-       esPropia: t.vendedorId ? true : false
-     }));
-     todasLasTareas = [...tareasMarcadas];
-   }
+      const resTareas = await fetch(`${API_URL}/tareas`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const dataTareas = await resTareas.json();
       
-      // Ordenar: pendientes más antiguas primero, luego las de hoy, luego completadas
+      let todasLasTareas = [];
+      
+      if (dataTareas.success) {
+        const tareasMarcadas = dataTareas.data.map(t => ({
+          ...t,
+          esPropia: t.vendedorId ? true : false
+        }));
+        todasLasTareas = [...tareasMarcadas];
+      }
+      
       const ordenadas = ordenarTareas(todasLasTareas);
       setTareas(ordenadas);
     } catch (error) {
@@ -150,16 +140,13 @@ function Crm() {
       fechaA.setHours(0, 0, 0, 0);
       fechaB.setHours(0, 0, 0, 0);
 
-      // Pendientes primero
       if (a.estado === 'pendiente' && b.estado !== 'pendiente') return -1;
       if (a.estado !== 'pendiente' && b.estado === 'pendiente') return 1;
 
-      // Si ambas son pendientes: las más antiguas primero
       if (a.estado === 'pendiente' && b.estado === 'pendiente') {
         return fechaA - fechaB;
       }
 
-      // Si no son pendientes, ordenar por fecha descendente
       return fechaB - fechaA;
     });
   };
@@ -193,7 +180,7 @@ function Crm() {
     setConflictoCita(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/tareas', {
+      const res = await fetch(`${API_URL}/tareas`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -221,7 +208,6 @@ function Crm() {
         });
         cargarTareas();
       } else if (res.status === 409 && data.conflicto) {
-        // Mostrar alerta de conflicto de horario
         setConflictoCita(data.conflicto);
       } else {
         toast({
@@ -239,7 +225,6 @@ function Crm() {
     }
   };
 
-  // Función para formatear fecha ISO a YYYY-MM-DD sin desplazamiento UTC
   const formatLocalDate = (isoDate) => {
     if (!isoDate) return '';
     const d = new Date(isoDate);
@@ -275,7 +260,7 @@ function Crm() {
     setConflictoCitaEditar(null);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/tareas/${formEditar._id}`, {
+      const res = await fetch(`${API_URL}/tareas/${formEditar._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -302,7 +287,6 @@ function Crm() {
         onCloseEditar();
         cargarTareas();
       } else if (res.status === 409 && data.conflicto) {
-        // Mostrar alerta de conflicto de horario
         setConflictoCitaEditar(data.conflicto);
       } else {
         toast({
@@ -323,7 +307,7 @@ function Crm() {
   const handleCambiarEstado = async (tareaId, nuevoEstado) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/tareas/${tareaId}/estado`, {
+      const res = await fetch(`${API_URL}/tareas/${tareaId}/estado`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -356,24 +340,18 @@ function Crm() {
     }
   };
 
-  /**
-   * Abre el diálogo de confirmación para eliminar una tarea cancelada.
-   */
   const handleConfirmarEliminarTarea = (tarea) => {
     setTareaAEliminar(tarea);
     onOpenEliminar();
   };
 
-  /**
-   * Ejecuta la eliminación de la tarea cancelada.
-   */
   const handleEliminarTareaCancelada = async () => {
     if (!tareaAEliminar) return;
 
     setEliminandoTarea(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/tareas/${tareaAEliminar._id}/cancelada`, {
+      const res = await fetch(`${API_URL}/tareas/${tareaAEliminar._id}/cancelada`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -419,7 +397,6 @@ function Crm() {
     });
   };
 
-  // Estado para envío de correo de reclutamiento
   const [tareaReclutamiento, setTareaReclutamiento] = useState(null);
   const [enviandoCorreo, setEnviandoCorreo] = useState(false);
   const [formEnvioReclutamiento, setFormEnvioReclutamiento] = useState({
@@ -428,12 +405,8 @@ function Crm() {
     rol: 'vendedor'
   });
 
-  /**
-   * Abre el diálogo para enviar correo de registro a candidato de reclutamiento
-   */
   const handleEnviarCorreoReclutamiento = (tarea) => {
     setTareaReclutamiento(tarea);
-    // Extraer datos del candidato desde la descripción de la tarea
     const descripcion = tarea.descripcion || '';
     const nombreMatch = descripcion.match(/Nombre: (.+)/);
     const emailMatch = descripcion.match(/Email: (.+)/);
@@ -446,16 +419,13 @@ function Crm() {
     onOpenEnviar();
   };
 
-  /**
-   * Envía el correo de registro al candidato
-   */
   const handleEnviarCorreoRegistro = async () => {
     if (!tareaReclutamiento) return;
 
     setEnviandoCorreo(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/reclutamiento/enviar-correo/${tareaReclutamiento._id}`, {
+      const res = await fetch(`${API_URL}/reclutamiento/enviar-correo/${tareaReclutamiento._id}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -518,7 +488,7 @@ function Crm() {
     setGuardandoPerfil(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/vendedor/perfil', {
+      const res = await fetch(`${API_URL}/vendedor/perfil`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -554,7 +524,6 @@ function Crm() {
     }
   };
 
-  // Estado para cambio de contraseña
   const [modoCambioPassword, setModoCambioPassword] = useState(false);
   const [cambiandoPassword, setCambiandoPassword] = useState(false);
 
@@ -609,7 +578,7 @@ function Crm() {
     setCambiandoPassword(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/auth/cambiar-password', {
+      const res = await fetch(`${API_URL}/auth/cambiar-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -684,7 +653,7 @@ function Crm() {
 
   // Si no hay usuario, mostrar login
   if (!usuario) {
-    return<Login/>;
+    return <Login />;
   }
 
   // Si hay usuario, mostrar dashboard
@@ -726,7 +695,7 @@ function Crm() {
           </Box>
         </HStack>
 
-        {/* Filtros de tipo de tarea (solo para admin) */}
+        {/* Filtros de tipo de tarea */}
         {usuario?.rol === 'admin' && (
           <Box mb={4} display="flex" gap={2} flexWrap="wrap">
             <Button
