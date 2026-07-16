@@ -137,6 +137,15 @@ const enviarCorreo = async ({ to, subject, html, maxRetries = 3 }) => {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    // Forzar IPv4 para compatibilidad con Render (no soporta IPv6)
+    family: 4,
+    // Configuración de TLS para Gmail
+    tls: {
+      rejectUnauthorized: false,
+    },
+    // Timeouts para mejorar la conectividad
+    connectionTimeout: 10000,
+    socketTimeout: 10000,
   });
 
   const mailOptions = {
