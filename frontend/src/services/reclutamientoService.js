@@ -4,7 +4,7 @@ import api from './api.js';
 // Obtener todas las tareas de llamada de reclutamiento
 export const obtenerTareasLlamada = async () => {
   try {
-    const response = await api.get('/api/reclutamiento/tareas-llamada');
+    const response = await api.get('/reclutamiento/tareas-llamada');
     return response.data;
   } catch (error) {
     console.error('Error al obtener tareas de llamada:', error);
@@ -15,7 +15,7 @@ export const obtenerTareasLlamada = async () => {
 // Marcar registro como tarea generada
 export const marcarTareaGenerada = async (id) => {
   try {
-    const response = await api.put(`/api/reclutamiento/${id}/marcar-tarea-generada`);
+    const response = await api.put(`/reclutamiento/${id}/marcar-tarea-generada`);
     return response.data;
   } catch (error) {
     console.error('Error al marcar tarea generada:', error);
@@ -26,7 +26,7 @@ export const marcarTareaGenerada = async (id) => {
 // Obtener todos los registros de reclutamiento (para admin)
 export const obtenerTodosRegistros = async () => {
   try {
-    const response = await api.get('/api/reclutamiento');
+    const response = await api.get('/reclutamiento');
     return response.data;
   } catch (error) {
     console.error('Error al obtener registros:', error);
@@ -37,7 +37,7 @@ export const obtenerTodosRegistros = async () => {
 // Obtener registro por ID
 export const obtenerRegistroPorId = async (id) => {
   try {
-    const response = await api.get(`/api/reclutamiento/${id}`);
+    const response = await api.get(`/reclutamiento/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error al obtener registro:', error);
@@ -48,7 +48,7 @@ export const obtenerRegistroPorId = async (id) => {
 // Actualizar status del candidato
 export const actualizarStatusCandidato = async (id, status) => {
   try {
-    const response = await api.put(`/api/reclutamiento/${id}/status`, { status });
+    const response = await api.put(`/reclutamiento/${id}/status`, { status });
     return response.data;
   } catch (error) {
     console.error('Error al actualizar status:', error);
@@ -59,7 +59,7 @@ export const actualizarStatusCandidato = async (id, status) => {
 // Eliminar registro
 export const eliminarRegistro = async (id) => {
   try {
-    const response = await api.delete(`/api/reclutamiento/${id}`);
+    const response = await api.delete(`/reclutamiento/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error al eliminar registro:', error);
@@ -70,7 +70,7 @@ export const eliminarRegistro = async (id) => {
 // Enviar correo de registro a candidato
 export const enviarCorreoRegistro = async (id, datos) => {
   try {
-    const response = await api.post(`/api/reclutamiento/enviar-correo/${id}`, datos);
+    const response = await api.post(`/reclutamiento/enviar-correo/${id}`, datos);
     return response.data;
   } catch (error) {
     console.error('Error al enviar correo de registro:', error);
@@ -96,7 +96,7 @@ export const validarTokenRegistro = async (token) => {
 // Completar registro con token
 export const completarRegistro = async (datos) => {
   try {
-    const response = await api.post('/api/reclutamiento/completar-registro', datos);
+    const response = await api.post('/reclutamiento/completar-registro', datos);
     return response.data;
   } catch (error) {
     console.error('Error al completar registro:', error);
