@@ -59,7 +59,7 @@ function Funnel() {
     };
 
     try {
-      const response = await api.post('/api/rifa/registro-olla-sarten-salud', payload);
+      const response = await api.post('/rifa/registro-olla-sarten-salud', payload);
       // Custom surprise toast centered on screen
       toast({
         duration: 9000,
