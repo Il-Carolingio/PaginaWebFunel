@@ -2,28 +2,45 @@
 // Servicio de envío de correos electrónicos
 // Soporta Brevo/Sendinblue (API), Gmail (SMTP con IPv4) y SendGrid como fallback
 import nodemailer from 'nodemailer';
-import { TransactionalEmailsApi, TransactionalEmailsApiApiKeys } from '@sendinblue/client';
 
 // ============================================================
 // 1. CONFIGURACIÓN DE BREVO/SENDINBLUE (PROVEEDOR PRINCIPAL)
 // ============================================================
 
 /**
- * Crea el cliente de Brevo/Sendinblue para enviar correos vía API
- * @returns {Object} - Cliente de Sendinblue configurado
+ * Extrae la dirección de correo plano desde una cadena tipo "Nombre <correo@ejemplo.com>"
+ * @param {string} value
+ * @returns {string}
  */
-const crearClienteBrevo = () => {
-  if (!process.env.BREVO_API_KEY) {
-    throw new Error('BREVO_API_KEY no configurado en variables de entorno');
+const extraerEmail = (value) => {
+  if (!value || typeof value !== 'string') return value;
+  const match = value.match(/<([^>]+)>/);
+  return match ? match[1].trim() : value.trim();
+};
+
+/**
+ * Crea una petición HTTP con timeout usando fetch
+ * @param {string} url
+ * @param {Object} options
+ * @param {number} timeoutMs
+ */
+const fetchConTimeout = async (url, options = {}, timeoutMs = 15000) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    if (!response.ok) {
+      const body = await response.text();
+      const error = new Error(`Sendinblue HTTP ${response.status}: ${response.statusText}`);
+      error.status = response.status;
+      error.body = body;
+      throw error;
+    }
+    return response.json();
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const apiInstance = new TransactionalEmailsApi();
-  apiInstance.setApiKey(
-    TransactionalEmailsApiApiKeys.apiKey,
-    process.env.BREVO_API_KEY
-  );
-
-  return apiInstance;
 };
 
 /**
@@ -35,18 +52,20 @@ const crearClienteBrevo = () => {
  * @returns {Promise<Object>} - Resultado del envío
  */
 const enviarCorreoBrevo = async ({ to, subject, html }) => {
+  if (!process.env.BREVO_API_KEY) {
+    throw new Error('BREVO_API_KEY no configurado en variables de entorno');
+  }
+
   try {
     console.log('[emailService] Intentando enviar con Brevo API...');
-    
-    const apiInstance = crearClienteBrevo();
-    const destinatarios = Array.isArray(to) 
-      ? to.map(email => ({ email }))
-      : [{ email: to }];
+    const destinatarios = Array.isArray(to)
+      ? to.map(email => ({ email: extraerEmail(email) }))
+      : String(to).split(',').map(item => item.trim()).filter(Boolean).map(email => ({ email: extraerEmail(email) }));
 
     const emailPayload = {
       sender: {
         name: 'Royal Prestige',
-        email: process.env.EMAIL_FROM || process.env.SMTP_USER
+        email: extraerEmail(process.env.EMAIL_FROM || process.env.SMTP_USER)
       },
       to: destinatarios,
       subject,
@@ -57,19 +76,31 @@ const enviarCorreoBrevo = async ({ to, subject, html }) => {
       }
     };
 
-    const response = await apiInstance.sendTransacEmail(emailPayload);
-    
-    console.log(`[emailService] ✅ Correo enviado con Brevo: ${response.messageId}`);
+    const response = await fetchConTimeout(
+      'https://api.sendinblue.com/v3/smtp/email',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': process.env.BREVO_API_KEY
+        },
+        body: JSON.stringify(emailPayload)
+      },
+      15000
+    );
+
+    const messageId = response?.messageId || response?.id || 'brevo';
+    console.log(`[emailService] ✅ Correo enviado con Brevo: ${messageId}`);
     return {
       success: true,
-      messageId: response.messageId || 'brevo',
+      messageId,
       provider: 'brevo',
       attempts: 1
     };
   } catch (error) {
-    console.error('[emailService] ❌ Error con Brevo:', error.message);
-    if (error.response) {
-      console.error('[emailService] Detalles:', error.response.body);
+    console.error('[emailService] ❌ Error con Brevo:', error.message || error);
+    if (error.body) {
+      console.error('[emailService] Detalles de respuesta:', error.body);
     }
     throw error;
   }
@@ -100,6 +131,7 @@ const crearTransporterGmailIPv4 = () => {
     },
     // Timeouts mejorados
     connectionTimeout: 15000,
+    greetingTimeout: 15000,
     socketTimeout: 15000,
   });
 };
@@ -114,8 +146,9 @@ const enviarCorreoGmail = async ({ to, subject, html }) => {
     console.log('[emailService] Intentando enviar con Gmail (IPv4 forzado)...');
     
     const transporter = crearTransporterGmailIPv4();
+    const fromEmail = extraerEmail(process.env.EMAIL_FROM || process.env.SMTP_USER);
     const mailOptions = {
-      from: `"Royal Prestige" <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`,
+      from: `"Royal Prestige" <${fromEmail}>`,
       to,
       subject,
       html,
@@ -153,9 +186,15 @@ const enviarCorreoSendGrid = async ({ to, subject, html }) => {
   console.log('[emailService] Intentando enviar con SendGrid (fallback 2)...');
   
   const sg = await import('@sendgrid/mail');
+  sg.default.setApiKey(process.env.SENDGRID_API_KEY);
+
+  const destinatarios = Array.isArray(to)
+    ? to.map(email => extraerEmail(email))
+    : String(to).split(',').map(item => item.trim()).filter(Boolean).map(email => extraerEmail(email));
+
   const msg = {
-    to,
-    from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+    to: destinatarios,
+    from: extraerEmail(process.env.EMAIL_FROM || process.env.SMTP_USER),
     subject,
     html,
   };
