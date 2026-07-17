@@ -1,34 +1,33 @@
 // backend/services/emailService.js
 // Servicio de envío de correos electrónicos
-// Soporta Brevo (API), Gmail (SMTP con IPv4) y SendGrid como fallback
+// Soporta Brevo/Sendinblue (API), Gmail (SMTP con IPv4) y SendGrid como fallback
 import nodemailer from 'nodemailer';
-import { TransactionalEmailsApi, SendSmtpEmail, ApiClient } from 'brevo';
+import { TransactionalEmailsApi, TransactionalEmailsApiApiKeys } from '@sendinblue/client';
 
 // ============================================================
-// 1. CONFIGURACIÓN DE BREVO (PROVEEDOR PRINCIPAL)
+// 1. CONFIGURACIÓN DE BREVO/SENDINBLUE (PROVEEDOR PRINCIPAL)
 // ============================================================
 
 /**
- * Crea el cliente de Brevo para enviar correos vía API
- * @returns {Object} - Cliente de Brevo configurado
+ * Crea el cliente de Brevo/Sendinblue para enviar correos vía API
+ * @returns {Object} - Cliente de Sendinblue configurado
  */
 const crearClienteBrevo = () => {
   if (!process.env.BREVO_API_KEY) {
     throw new Error('BREVO_API_KEY no configurado en variables de entorno');
   }
 
-  // Configurar el cliente de Brevo
-  const apiClient = new ApiClient();
-  apiClient.setApiKey(
-    ApiClient.ApiKeys.apiKey,
+  const apiInstance = new TransactionalEmailsApi();
+  apiInstance.setApiKey(
+    TransactionalEmailsApiApiKeys.apiKey,
     process.env.BREVO_API_KEY
   );
-  
-  return new TransactionalEmailsApi(apiClient);
+
+  return apiInstance;
 };
 
 /**
- * Envía correo usando la API de Brevo
+ * Envía correo usando la API de Brevo/Sendinblue
  * @param {Object} opciones - Opciones de envío
  * @param {string} opciones.to - Destinatario(s)
  * @param {string} opciones.subject - Asunto
@@ -40,32 +39,25 @@ const enviarCorreoBrevo = async ({ to, subject, html }) => {
     console.log('[emailService] Intentando enviar con Brevo API...');
     
     const apiInstance = crearClienteBrevo();
-    const sendSmtpEmail = new SendSmtpEmail();
-    
-    // Configurar remitente (debe estar verificado en Brevo)
-    sendSmtpEmail.sender = {
-      name: 'Royal Prestige',
-      email: process.env.EMAIL_FROM || process.env.SMTP_USER
-    };
-    
-    // Configurar destinatario(s)
     const destinatarios = Array.isArray(to) 
       ? to.map(email => ({ email }))
       : [{ email: to }];
-    sendSmtpEmail.to = destinatarios;
-    
-    // Configurar contenido
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.htmlContent = html;
-    sendSmtpEmail.textContent = html.replace(/<[^>]*>/g, ''); // Versión texto plano
-    
-    // Configurar opciones adicionales
-    sendSmtpEmail.headers = {
-      'X-Entity-Ref-ID': `royal-prestige-${Date.now()}`
+
+    const emailPayload = {
+      sender: {
+        name: 'Royal Prestige',
+        email: process.env.EMAIL_FROM || process.env.SMTP_USER
+      },
+      to: destinatarios,
+      subject,
+      htmlContent: html,
+      textContent: html.replace(/<[^>]*>/g, ''),
+      headers: {
+        'X-Entity-Ref-ID': `royal-prestige-${Date.now()}`
+      }
     };
-    
-    // Enviar correo
-    const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
+
+    const response = await apiInstance.sendTransacEmail(emailPayload);
     
     console.log(`[emailService] ✅ Correo enviado con Brevo: ${response.messageId}`);
     return {
@@ -282,7 +274,7 @@ const generarCuerpoCorreo = (prospectos, fechaEnvio) => {
     <body style="margin:0; padding:20px; font-family:Arial, sans-serif; background-color:#f4f4f4;">
       <div style="max-width:800px; margin:0 auto; background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
         <div style="background-color:#2B6CB0; color:white; padding:20px; text-align:center;">
-          <h2 style="margin:0;">Royal Prestige</h2>
+          <h2 style="margin:0;">Casa Pleroma</h2>
           <p style="margin:5px 0 0; font-size:14px; opacity:0.9;">Reporte Automático de Prospectos</p>
         </div>
         <div style="padding:20px;">
