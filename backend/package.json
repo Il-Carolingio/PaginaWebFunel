@@ -16,7 +16,8 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
     "nodemailer": "^9.0.1",
-    "@sendgrid/mail": "^8.0.0"
+    "@sendgrid/mail": "^8.0.0",
+    "brevo": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
